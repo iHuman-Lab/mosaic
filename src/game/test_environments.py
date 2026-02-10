@@ -163,6 +163,13 @@ class MultiRoomDifficultyEnv(SAREnv):
                     victim_y = yT + self.room_size // 2
                     self.grid.set(victim_x, victim_y, FakeVictimLeft(color="red"))
 
+                # Add a blue key in the second room (room_idx == 1)
+                # Place it on the left side of the room (near the inner wall)
+                if room_idx == 1:
+                    key_x = xL + 1
+                    key_y = yT + self.room_size // 2
+                    self.grid.set(key_x, key_y, Key("blue"))
+
                 room_idx += 1
 
         self._randomly_remove_walls()

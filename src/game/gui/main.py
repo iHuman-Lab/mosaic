@@ -138,7 +138,8 @@ class SAREnvGUI:
             elif event.key == pygame.K_F11:
                 self.toggle_fullscreen()
             else:
-                event.key = pygame.key.name(int(event.key))
+                # Do not mutate `event.key` (keep numeric key code).
+                # Pass the original event through to the User handler.
                 self.user.handle_key(event)
 
     def toggle_fullscreen(self):

@@ -82,26 +82,49 @@ class PickupAllVictimsInstr(Instr):
         self.victims = victims
         self.victim_types = [type(v) for v in victims]
         self.num_victims = len(victims)
+        self.env = None
+        self.start_room = None
 
-    def verify(self, action):
+    def reset_verifier(self, env):
+        """Initialize verifier with environment context.
+
+        We record the starting room so that completion requires the agent
+        to leave that room (e.g., open the door and enter the next room)
+        after rescuing victims.
         """
-        Verify if all victims have been picked up.
+        self.env = env
+        try:
+            self.start_room = env.room_from_pos(*env.agent_pos)
+        except Exception:
+            self.start_room = None
 
-        Args:
-            env: The environment instance
+    def verify(self, *args, **kwargs):
+        """Verify that all victims are picked and agent has left start room.
 
-        Returns:
-            str: 'success' if all victims picked up, 'continue' otherwise
+        Returns 'success' only when there are no remaining real victims and
+        the agent is located in a different room than where it started.
+        Otherwise returns 'continue'.
         """
+        if self.env is None:
+            return "continue"
+
         # Use utility method to count remaining victims
         remaining_victims = self.env._count_objects_by_type(REAL_VICTIMS)
 
-        # All victims have been picked up
-        if remaining_victims == 0:
-            return "success"
+        if remaining_victims > 0:
+            return "continue"
 
-        # Still victims to pick up
-        return "continue"
+        # If we have a recorded start room, require agent to have left it
+        if self.start_room is not None:
+            try:
+                current_room = self.env.room_from_pos(*self.env.agent_pos)
+                if current_room is self.start_room:
+                    return "continue"
+            except Exception:
+                # If room computation fails, fall back to simple success
+                pass
+
+        return "success"
 
     def surface(self, env):
         """
