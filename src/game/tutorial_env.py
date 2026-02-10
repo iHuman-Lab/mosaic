@@ -72,12 +72,9 @@ class TutorialEnv(SARLevelGen):
                 self.grid.set(fx, fy, None); self.saved_victims = getattr(self, "saved_victims", 0) + 1
                 self.part1_picked = self.part1_picked or (self.current_part == 1)
                 return self.gen_obs(), 1.0, False, False, {}
-            try:
-                from minigrid.core.world_object import Key as MGKey
-                if isinstance(obj, MGKey) or getattr(obj, "type", None) == "key":
-                    self.carrying = obj; self.grid.set(fx, fy, None)
-                    return self.gen_obs(), 0.0, False, False, {"picked_key": True}
-            except Exception: pass
+            if isinstance(obj, Key) or getattr(obj, "type", None) == "key":
+                self.carrying = obj; self.grid.set(fx, fy, None)
+                return self.gen_obs(), 0.0, False, False, {"picked_key": True}
             return super().step(action)
 
         if action == getattr(self.actions, "drop", None):
@@ -93,9 +90,8 @@ class TutorialEnv(SARLevelGen):
             try:
                 if fwd is not None:
                     fx, fy = int(fwd[0]), int(fwd[1])
-                    from minigrid.core.world_object import Door as MGDoor
                     obj = self.grid.get(fx, fy)
-                    if isinstance(obj, MGDoor) and getattr(obj, "is_locked", False):
+                    if isinstance(obj, Door) and getattr(obj, "is_locked", False):
                         carrying = getattr(self, "carrying", None)
                         if carrying is not None and getattr(carrying, "type", None) == "key" and getattr(carrying, "color", None) == getattr(obj, "color", None):
                             obj.is_locked = False
@@ -108,16 +104,14 @@ class TutorialEnv(SARLevelGen):
             except Exception: pass
             pre_open = True
             try:
-                from minigrid.core.world_object import Door as MGDoor
                 if fwd is not None:
-                    o = self.grid.get(int(fwd[0]), int(fwd[1])); pre_open = isinstance(o, MGDoor) and getattr(o, "is_open", False)
+                    o = self.grid.get(int(fwd[0]), int(fwd[1])); pre_open = isinstance(o, Door) and getattr(o, "is_open", False)
             except Exception: pre_open = True
             obs, reward, term, trunc, info = super().step(action)
             post_open = False
             try:
                 if fwd is not None:
-                    from minigrid.core.world_object import Door as MGDoor
-                    o2 = self.grid.get(int(fwd[0]), int(fwd[1])); post_open = isinstance(o2, MGDoor) and getattr(o2, "is_open", False)
+                    o2 = self.grid.get(int(fwd[0]), int(fwd[1])); post_open = isinstance(o2, Door) and getattr(o2, "is_open", False)
             except Exception: post_open = False
             if not pre_open and post_open:
                 try: self.next_part(); return self.gen_obs(), 0.0, False, False, {"tutorial_advanced": True}
@@ -170,12 +164,9 @@ class LockedDoorRoom(SARLevelGen):
             if fwd is None: return super().step(action)
             fx, fy = int(fwd[0]), int(fwd[1])
             if not (0 <= fx < self.width and 0 <= fy < self.height): return super().step(action)
-            try:
-                from minigrid.core.world_object import Key as MGKey
-                obj = self.grid.get(fx, fy)
-                if isinstance(obj, MGKey) or getattr(obj, "type", None) == "key":
-                    self.carrying = obj; self.grid.set(fx, fy, None); return self.gen_obs(), 0.0, False, False, {"picked_key": True}
-            except Exception: pass
+            obj = self.grid.get(fx, fy)
+            if isinstance(obj, Key) or getattr(obj, "type", None) == "key":
+                self.carrying = obj; self.grid.set(fx, fy, None); return self.gen_obs(), 0.0, False, False, {"picked_key": True}
             return super().step(action)
         if action == getattr(self.actions, "toggle", None):
             fwd = getattr(self, "front_pos", None)
