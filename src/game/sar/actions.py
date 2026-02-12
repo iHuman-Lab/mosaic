@@ -1,4 +1,3 @@
-
 from .objects import FAKE_VICTIMS, REAL_VICTIMS
 
 

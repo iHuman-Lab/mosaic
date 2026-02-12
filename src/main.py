@@ -7,6 +7,15 @@ from game.sar.utils import VictimPlacer
 from game.tutorial_env import TutorialEnv
 from utils import skip_run
 
+# Patch: ManualControl expects string key names, pygame sends int codes
+from game.gui.user import User
+_orig_handle_key = User.handle_key
+def _patched_handle_key(self, event):
+    event.key = pygame.key.name(int(event.key))
+    print(f"[PATCH] key={event.key!r}", flush=True)
+    return _orig_handle_key(self, event)
+User.handle_key = _patched_handle_key
+
 # Load config
 config_path = "configs/config.yml"
 with open(config_path, "r") as file:
