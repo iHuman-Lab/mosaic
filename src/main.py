@@ -4,7 +4,10 @@ import yaml
 from game.gui.main import SAREnvGUI
 from game.sar.env import PickupVictimEnv
 from game.sar.utils import VictimPlacer
-from game.tutorial_env import TutorialEnv
+try:
+    from game.tutorial_env import TutorialEnv
+except ImportError:
+    from game.tutorial_env import OptimizedSAREnv as TutorialEnv
 from utils import skip_run
 
 # Patch: ManualControl expects string key names, pygame sends int codes
@@ -33,7 +36,7 @@ with skip_run("run", "sar_gui_advanced") as check, check():
     TUTORIAL = True
 
     if TUTORIAL:
-        env = TutorialEnv(start_part=1, screen_size=800, render_mode="rgb_array", agent_pov=True, tile_size=64)
+        env = TutorialEnv(config={"start_part": 1}, screen_size=800, render_mode="rgb_array", agent_pov=True, tile_size=64)
     else:
         env = PickupVictimEnv(
         num_rows=3,
