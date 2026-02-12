@@ -11,7 +11,8 @@ from utils import skip_run
 from game.gui.user import User
 _orig_handle_key = User.handle_key
 def _patched_handle_key(self, event):
-    event.key = pygame.key.name(int(event.key))
+    if isinstance(event.key, int):
+        event.key = pygame.key.name(event.key)
     print(f"[PATCH] key={event.key!r}", flush=True)
     return _orig_handle_key(self, event)
 User.handle_key = _patched_handle_key
