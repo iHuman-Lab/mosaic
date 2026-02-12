@@ -103,6 +103,8 @@ class OptimizedSAREnv(SARLevelGen):
             self.grid.set(fx, fy, None); self.saved_victims += 1
             return self.gen_obs(), 1.0, False, False, {"rescued": True}
         if isinstance(obj, Key) or getattr(obj, "type", None) == "key":
+            if getattr(self, "carrying", None) is not None:
+                return super().step(self.actions.pickup)
             self.carrying = obj; self.grid.set(fx, fy, None)
             return self.gen_obs(), 0.0, False, False, {"picked_key": True}
         return super().step(self.actions.pickup)
