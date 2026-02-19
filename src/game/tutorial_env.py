@@ -38,7 +38,7 @@ class OptimizedSAREnv(SARLevelGen):
         self.instrs = type("I", (), {
             "surface": lambda s, e: [],
             "reset_verifier": lambda s, e: setattr(s, "env", e) or None,
-            "update_objs_poss": lambda s: None,
+            #"update_objs_poss": lambda s: None,
             "verify": lambda s, *a, **k: "incomplete",
         })()
 
@@ -58,8 +58,9 @@ class OptimizedSAREnv(SARLevelGen):
         self._add_door(True)
 
     def _room3(self, cx, cy):
-        self.grid.set(cx, cy, Key("red"))
+        self.grid.set(cx, cy, Key("yellow"))
         self.grid.set(cx, cy + 1, Key("blue"))
+        self.grid.set(cx - 2, cy, FakeVictim("right", "down", color="red"))
 
     # ─────────────────────────────
 
@@ -144,8 +145,4 @@ class OptimizedSAREnv(SARLevelGen):
             "remaining_victims": remaining_victims,
             "status": status,
         }
-
-
-
-# Backwards compatibility
 TutorialEnv = OptimizedSAREnv
