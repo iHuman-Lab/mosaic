@@ -1,0 +1,66 @@
+  subjects:
+    - subject_id: "1"
+      file: "data/sub-P001_ses-S001_task-Default_run-001_sar.xdf"
+      expertise: "novice"
+    - subject_id: "2"
+      file: "data/sub-P002_ses-S001_task-Default_run-001_sar.xdf"
+      expertise: "novice"
+    - subject_id: "3"
+      file: "data/sub-P003_ses-S001_task-Default_run-001_sar.xdf"
+      expertise: "novice"
+    - subject_id: "4"
+      file: "data/sub-P004_ses-S001_task-Default_run-001_sar.xdf"
+      expertise: "novice"
+    - subject_id: "5"
+      file: "data/sub-P005_ses-S001_task-Default_run-001_sar.xdf"
+      expertise: "novice"
+    - subject_id: "6"
+      file: "data/sub-P006_ses-S001_task-Default_run-001_sar.xdf"
+      expertise: "novice"
+    - subject_id: "7"
+      file: "data/sub-P007_ses-S001_task-Default_run-001_sar.xdf"
+      expertise: "expert"
+    - subject_id: "8"
+      file: "data/sub-P008_ses-S001_task-Default_run-001_sar.xdf"
+      expertise: "expert"
+    - subject_id: "9"
+      file: "data/sub-P009_ses-S001_task-Default_run-001_sar.xdf"
+      expertise: "expert"
+    - subject_id: "10"
+      file: "data/sub-P010_ses-S001_task-Default_run-001_sar.xdf"
+      expertise: "expert"
+    - subject_id: "11"
+      file: "data/sub-P011_ses-S001_task-Default_run-001_sar.xdf"
+      expertise: "expert"
+    - subject_id: "12"
+      file: "data/sub-P012_ses-S001_task-Default_run-001_sar.xdf"
+      expertise: "expert"
+
+glmm:
+    files:
+      trial_data: ""
+      eyetracker_timeline: ""
+      llm_periods: ""
+      fixations_summary: ""
+      fixations_summary_aio: ""
+      fixations_long: ""
+      fixations_long_aio: ""
+      saccades_summary: ""
+      saccades_long: ""
+    merge_keys:
+      - participant_id
+      - trial_id
+      - llm_provider
+      - prompt_type
+      - llm_model
+  synthetic_conditions:
+    enabled: true
+    providers:
+      - gemini
+      - chatgpt
+    prompts:
+      - detailed
+      - sparse
+    provider_models:
+      gemini: gemini-1.5-flash
+      chatgpt: gpt-4o

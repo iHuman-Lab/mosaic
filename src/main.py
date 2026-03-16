@@ -33,7 +33,7 @@ with skip_run("run", "sar_gui_advanced") as check, check():
         num_fake_victims=5, num_real_victims=3, important_victim="down"
     )
     # Toggle tutorial mode here
-    TUTORIAL = True
+    TUTORIAL = False
 
     if TUTORIAL:
         env = TutorialEnv(config={"start_part": 1}, screen_size=800, render_mode="rgb_array", agent_pov=True, tile_size=64)
