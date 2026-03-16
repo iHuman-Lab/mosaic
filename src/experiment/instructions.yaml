@@ -51,7 +51,7 @@ practice:
       - You can ONLY MOVE FORWARD.
       - MOVING BACKWARD is NOT ALLOWED. If you want to move back, you have to ROTATE and then move forward.
       - To pick an OBJECT, move next to object POINT TOWARDS the object and press TAB
-
+  - |
     Keys and doors:
       - You may carry only ONE KEY at a time.
       - CLOSED DOORS will be COLORED COMPLETELY.
@@ -71,19 +71,20 @@ main_game:
       - TAB : PICK UP ITEMS
       - SHIFT : DROP ITEMS you are carrying
       - SPACE : OPEN DOORS
+      - ALT : ASK AI TEAMMATE for SUGGESTIONS
 
     Movement rules:
       - You can ONLY MOVE FORWARD.
       - MOVING BACKWARD is NOT ALLOWED. If you want to move back, you have to ROTATE and then move forward.
       - To pick an OBJECT, move next to object POINT TOWARDS the object and press TAB
 
+  - |
     Keys and doors:
       - You may carry only ONE KEY at a time.
       - CLOSED DOORS will be COLORED COMPLETELY.
       - A closed door can only be opened with a MATCHING KEY.
       - OPEN DOORS will only have colored edges.
 
-  - |
     Victims:
       - VICTIMS appear as T symbols. Note they may be ROTATED.
       - DISTRACTORS are ASYMMETRIC T shapes.
@@ -95,17 +96,17 @@ main_game:
     Hazards:
       - Some tiles contain FIRE (they will be ORANGE).
       - AVOID stepping on FIRE TILES.
+  - |
 
     Objective:
       - RESCUE all the CORRECT VICTIMS within the STEPS AVAILABLE.
       - AVOID HAZARDS.
-      - You will recieve a NEGATIVE REWARD
+      - You will recieve a NEGATIVE REWARD if pick up wrong Victims.
 
-  - |
     Interface information:
       - An AI TEAMMATE will provide suggestions in the CHATBOX.
       - If you are stuck and need help you can press ALT key and the AI teammate will respond.
-      - You CHOOSE to follow the INSTRUCTIONS.
+      - You can CHOOSE to follow the INSTRUCTIONS.
       - The interface will display:
         - VICTIMS RESCUED
         - SCORE

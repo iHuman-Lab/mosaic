@@ -20,7 +20,7 @@ class InfoPanel:
         )
 
         # Layout constants
-        PADDING_X = 30
+        PADDING_X = 10
         content_width = panel_width - (PADDING_X * 2)
 
         # Title
@@ -33,14 +33,14 @@ class InfoPanel:
         )
 
         # Trial name
-        self.trial_label = UILabel(
-            relative_rect=pygame.Rect(0, 5, panel_width, 25),
-            text="",
-            manager=manager,
-            container=self.panel,
-            object_id="#info_text",
-            anchors={"top": "top", "top_target": self.title},
-        )
+        # self.trial_label = UILabel(
+        #     relative_rect=pygame.Rect(0, 2, panel_width, 25),
+        #     text="",
+        #     manager=manager,
+        #     container=self.panel,
+        #     object_id="#info_text",
+        #     anchors={"top": "top", "top_target": self.title},
+        # )
 
         # Victims section
         self.victims_header = UILabel(
@@ -49,11 +49,11 @@ class InfoPanel:
             manager=manager,
             container=self.panel,
             object_id="#section_header",
-            anchors={"top": "top", "top_target": self.trial_label},
+            anchors={"top": "top", "top_target": self.title},
         )
 
         self.rescued_label = UILabel(
-            relative_rect=pygame.Rect(PADDING_X, 5, content_width, 30),
+            relative_rect=pygame.Rect(PADDING_X, 2, content_width, 30),
             text="Rescued: 0",
             manager=manager,
             container=self.panel,
@@ -62,7 +62,7 @@ class InfoPanel:
         )
 
         self.remaining_label = UILabel(
-            relative_rect=pygame.Rect(PADDING_X, 5, content_width, 30),
+            relative_rect=pygame.Rect(PADDING_X, 2, content_width, 30),
             text="Remaining: 0",
             manager=manager,
             container=self.panel,
@@ -70,7 +70,7 @@ class InfoPanel:
         )
 
         self.score_label = UILabel(
-            relative_rect=pygame.Rect(PADDING_X, 5, content_width, 30),
+            relative_rect=pygame.Rect(PADDING_X, 2, content_width, 30),
             text="Score: 0",
             manager=manager,
             container=self.panel,
@@ -79,7 +79,7 @@ class InfoPanel:
 
         # Time & Inventory section
         self.time_header = UILabel(
-            relative_rect=pygame.Rect(PADDING_X, 20, content_width, 30),
+            relative_rect=pygame.Rect(PADDING_X, 2, content_width, 30),
             text="TIME & INVENTORY",
             manager=manager,
             container=self.panel,
@@ -88,7 +88,7 @@ class InfoPanel:
         )
 
         self.steps_label = UILabel(
-            relative_rect=pygame.Rect(PADDING_X, 10, content_width, 30),
+            relative_rect=pygame.Rect(PADDING_X, 2, content_width, 30),
             text="Steps: 0 / 0",
             manager=manager,
             container=self.panel,
@@ -96,7 +96,7 @@ class InfoPanel:
         )
 
         self.inventory_label = UILabel(
-            relative_rect=pygame.Rect(PADDING_X, 10, content_width, 30),
+            relative_rect=pygame.Rect(PADDING_X, 2, content_width, 30),
             text="Inventory: None",
             manager=manager,
             container=self.panel,
@@ -105,7 +105,7 @@ class InfoPanel:
 
         # Navigation section
         self.nav_header = UILabel(
-            relative_rect=pygame.Rect(PADDING_X, 20, content_width, 30),
+            relative_rect=pygame.Rect(PADDING_X, 2, content_width, 30),
             text="NAVIGATION",
             manager=manager,
             container=self.panel,
@@ -113,7 +113,7 @@ class InfoPanel:
             anchors={"top": "top", "top_target": self.inventory_label},
         )
 
-        compass_size = panel_width // 3
+        compass_size = panel_width // 4
         raw = pygame.image.load(
             str(Path(__file__).parent / "compass.png")
         ).convert_alpha()
@@ -124,7 +124,7 @@ class InfoPanel:
             raw, (compass_size, compass_size)
         )
         self.compass_image = UIImage(
-            relative_rect=pygame.Rect(PADDING_X, 10, compass_size, compass_size),
+            relative_rect=pygame.Rect(PADDING_X, 2, compass_size, compass_size),
             image_surface=compass_surface,
             manager=manager,
             container=self.panel,
@@ -134,10 +134,10 @@ class InfoPanel:
         # Controls beside the compass
         controls_x = PADDING_X + compass_size + 50
         controls_width = panel_width - controls_x - 10
-        controls_html = "<font size=7>Arrows → Move / Turn<br>Tab → Pick up<br>Shift → Drop Item<br>Space → Open door<br>Alt → Ask Guidance</font>"
+        controls_html = "<font size=5>Arrows → Move / Turn<br>Tab → Pick up<br>Shift → Drop Item<br>Space → Open door<br>Alt → Ask Guidance</font>"
         UITextBox(
             html_text=controls_html,
-            relative_rect=pygame.Rect(controls_x, 10, controls_width, compass_size),
+            relative_rect=pygame.Rect(controls_x, 2, controls_width, compass_size+15),
             manager=manager,
             container=self.panel,
             anchors={"top": "top", "top_target": self.nav_header},
@@ -154,7 +154,8 @@ class InfoPanel:
         )
 
     def set_trial_name(self, name: str):
-        self.trial_label.set_text(name)
+        # self.trial_label.set_text(name)
+        pass
 
     def _update_victims_section(self, mission_status):
         """Update the victims section labels."""

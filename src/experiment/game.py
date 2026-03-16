@@ -70,12 +70,11 @@ class SARGameTrial(LSLTrial):
         return [ujson.dumps(state)]
 
     def execute(self) -> None:
-        min_steps_percent = self.parameters.get("min_steps_percent", 80) / 100
-        max_steps = self.gui.user.env.max_steps
+        min_steps= self.parameters.get("min_steps", 500)
 
         while self.gui.running:
             user = self.gui.user
-            enough = user.total_steps >= int(min_steps_percent * max_steps)
+            enough = user.total_steps >= int(min_steps)
 
             if enough and user.episode_ended:
                 self.gui.close()

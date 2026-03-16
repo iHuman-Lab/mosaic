@@ -1,15 +1,15 @@
-display: &display 0
+display: &display 1
 fullscreen: &fullscreen true
 
 game:
   display: *display
   fullscreen: *fullscreen
-  min_steps_percent: 80
+  min_steps: 500
   prompt_type: sparse
   openai_model: gpt-5-mini-2025-08-07
   google_model: gemini-2.5-flash
-  num_rows: 3
-  num_cols: 3
+  num_rows: 5
+  num_cols: 5
   llm_nudge_interval: 50
 
 vs:
@@ -19,10 +19,10 @@ vs:
   height: 600
   rows: 4
   cols: 4
-  total_trials: 5
+  total_trials: 10
   fixation_time: 600
   post_trial_pause: 2000
-  response_timeout: 3
+  response_timeout: 5
   angles: [0, 90, 180, 270]
   output_file: 'vs_results.csv'
   background_color: [120, 120, 120]

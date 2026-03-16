@@ -31,7 +31,7 @@ class User(ManualControl):
         self.truncated = bool(truncated)
         self.total_steps += 1
         self.steps_since_last_llm += 1
-        if terminated or truncated:
+        if terminated:
             self.episode_ended = True
             self.reset()
         else:
@@ -43,10 +43,6 @@ class User(ManualControl):
         if key == "escape":
             self.env.close()
             return
-        if key == "backspace":
-            self.reset()
-            return
-
         key_to_action = {
             "left": Actions.left,
             "right": Actions.right,

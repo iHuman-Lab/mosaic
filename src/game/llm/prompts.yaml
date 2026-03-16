@@ -31,17 +31,15 @@ preamble: |
   PathLength: number of steps required to reach it
 
   DECISION PROCESS (INTERNAL – DO NOT OUTPUT)
-
   Step 1: Identify all reachable survivors.
   Step 2: Select the survivor with the smallest PathLength.
   Step 3: If multiple survivors share that PathLength, choose the Northmost (lowest row).
-  Step 4: If still tied, choose the Westmost (lowest column).
-  Step 5: If no reachable survivors exist, identify the reachable locked door with the lowest PathLength.
-  Step 6: If the door cannot be opened yet, identify the reachable key that unlocks it.
-  Step 7: If the key is reachable, prioritize getting the key before the door.
-  Step 8: If neither the door nor its key is reachable, explore toward the nearest visible area that may open a new path.
-  Step 9: Select ONE immediate objective only (survivor, door, key, or exploration).
-  Step 10: Verify the chosen action follows all environment rules before generating the instruction. (INTERNAL – NO OUTPUT)
+  Step 4: Prioritize getting colored keys as they unlock new areas and survivors.
+  Step 5: If the door cannot be opened yet, identify the reachable key that unlocks it.
+  Step 6: If the key is reachable, prioritize getting the key before the door.
+  Step 7: If neither the door nor its key is reachable, explore toward the nearest visible area that may open a new path.
+  Step 8: Select ONE immediate objective only (survivor, door, key, or exploration).
+  Step 9: Verify the chosen action follows all environment rules before generating the instruction. (INTERNAL – NO OUTPUT)
 
   RADIO TRANSMISSION
   Imagine you are speaking this message aloud over a rescue radio.
@@ -55,7 +53,7 @@ preamble: |
   "You'll need to..."
 
 sparse_suffix: |
-  Step 11: Convert the chosen objective into one short radio instruction.
+  Step 10: Convert the chosen objective into one short radio instruction.
 
   SPEECH STYLE
   Sound like a calm SAR coordinator over radio.
@@ -78,7 +76,7 @@ sparse_suffix: |
   <START> your instruction here <END>
 
 detailed_suffix: |
-  Step 11: Compose a short radio briefing about the chosen objective.
+  Step 10: Compose a short radio briefing about the chosen objective.
 
   SPEECH STYLE
   Sound like a calm SAR coordinator giving a situation update over radio.
@@ -94,7 +92,7 @@ detailed_suffix: |
   <START> Multiple victims are trapped behind the green door on the western edge of the map. Secure the matching key from the northern side and proceed to the open the door. We need that sector cleared before the structure destabilizes. <END>
 
   OUTPUT RULES
-  - Output 3–4 natural sentences.
+  - Output 2–3 natural sentences.
   - No bullet points, lists, or labels.
   - No visible reasoning.
   - The response must contain exactly one <START> and one <END>.
