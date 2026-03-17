@@ -1,177 +1,227 @@
-import warnings
-from contextlib import suppress
+
+import json
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
-import statsmodels.formula.api as smf
-from statsmodels.genmod.bayes_mixed_glm import PoissonBayesMixedGLM
-from statsmodels.tools.sm_exceptions import ConvergenceWarning
+import pyxdf
+import yaml
 
-try:
-    from igaze import _eyetracking_common as common
-except ModuleNotFoundError:
-    import _eyetracking_common as common
+# ---------------------------------------------------------------------------
+# File discovery
+# ---------------------------------------------------------------------------
 
-FIXATION_METRICS = common.FIXATION_METRICS
-SACCADE_METRICS = common.SACCADE_METRICS
-TRIAL_MERGE_KEYS = common.TRIAL_MERGE_KEYS
-COUNT_OUTCOMES = ["saved_victims", "step_count", "n_fixations", "n_saccades"]
-CONTINUOUS_OUTCOMES = [
-    "mean_fixation_duration",
-    "total_fixation_time",
-    "fixation_rate",
-    "mean_saccade_duration",
-    "total_saccade_time",
-    "mean_amplitude",
-    "saccade_rate",
-]
+def find_xdf(data_dir: str | Path, subject_id: str) -> Path | None:
+    """Find an XDF file under data_dir whose name contains subject_id (case-insensitive)."""
+    data_dir = Path(data_dir)
+    for f in data_dir.rglob("*.xdf"):
+        if subject_id.lower() in f.name.lower():
+            return f
+    return None
 
 
-def _load_eye_metric_summaries(config_path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
-    _, et_cfg = common.load_eyetracking_config(config_path)
-    output_cfg = et_cfg.get("output", {})
+# ---------------------------------------------------------------------------
+# Stream extraction
+# ---------------------------------------------------------------------------
 
-    def _load_summary(csv_key: str, extractor) -> pd.DataFrame:
-        path = output_cfg.get(csv_key)
-        if not path:
-            return pd.DataFrame()
-        resolved = common.resolve_path(config_path.parent.parent, path)
-        df = pd.read_csv(resolved) if resolved.exists() else extractor(config_path)[1]
-        if "subject_id" in df.columns and "participant_id" not in df.columns:
-            df = df.rename(columns={"subject_id": "participant_id"})
-        if "participant_id" in df.columns:
-            df["participant_id"] = df["participant_id"].astype(str)
-        return df
-
-    from igaze.fixation import extract_fixations_from_config
-    from igaze.saccade import extract_saccades_from_config
-
-    return _load_summary("summary_csv", extract_fixations_from_config), _load_summary(
-        "saccades_summary_csv", extract_saccades_from_config
-    )
+def _get_stream(streams: list[dict], name: str) -> dict | None:
+    for s in streams:
+        if s["info"].get("name", [""])[0] == name:
+            return s
+    return None
 
 
-def extract_trials_from_xdf(config_path: str | Path) -> pd.DataFrame:
-    config_path = Path(config_path)
-    project_root, et_cfg = common.load_eyetracking_config(config_path)
-    frames = []
-    for subject in et_cfg["subjects"]:
-        file_path = common.resolve_path(project_root, subject["file"])
-        _, game_df = common.load_subject_data(file_path)
-        if game_df.empty:
+def _parse_game_stream(s: dict) -> pd.DataFrame:
+    """Parse JSON game state samples into a flat DataFrame (drops array fields)."""
+    rows = []
+    for ts, v in zip(s["time_stamps"], s["time_series"]):
+        try:
+            sample = json.loads(v[0] if isinstance(v, (list, tuple)) else v)
+        except (json.JSONDecodeError, TypeError):
             continue
-        game_df = game_df.copy()
-        game_df["subject_id"] = str(subject["subject_id"])
-        game_df["expertise"] = subject.get("expertise", "unknown")
-        frames.append(game_df)
-    if not frames:
-        return pd.DataFrame()
-    df = pd.concat(frames, ignore_index=True).sort_values(["subject_id", "_timestamp"])
-    df = df.reset_index(drop=True)
-    df["trial_id"] = df.groupby("subject_id", group_keys=False).apply(
-        lambda group: (
-            (group["prompt_type"] != group["prompt_type"].shift())
-            | (group["llm_model"] != group["llm_model"].shift())
-            | (group["llm_provider"] != group["llm_provider"].shift())
-        ).cumsum()
-    ).reset_index(drop=True)
+        # keep only scalar fields (drop image, grid, etc.)
+        flat = {"timestamp": float(ts)}
+        for k, val in sample.items():
+            if isinstance(val, (str, int, float, bool)) or val is None:
+                flat[k] = val
+        rows.append(flat)
+    return pd.DataFrame(rows)
+
+
+def _parse_eye_stream(s: dict, channel_map: dict | None = None) -> pd.DataFrame:
+    """Parse eyetracker float samples into a DataFrame."""
+    ts   = s["time_stamps"]
+    data = np.array(s["time_series"])  # shape (N, channels)
+
+    # try to get channel labels from metadata
+    labels = None
+    try:
+        info    = s["info"]
+        desc    = info.get("desc", [{}])
+        if isinstance(desc, list):
+            desc = desc[0] if desc else {}
+        desc = desc or {}
+        ch_node = desc.get("channels", [{}])
+        if isinstance(ch_node, list):
+            ch_node = ch_node[0] if ch_node else {}
+        ch_node = ch_node or {}
+        ch_list = ch_node.get("channel", [])
+        if ch_list:
+            labels = []
+            for ch in ch_list:
+                label = ch.get("label", ["?"])
+                labels.append(label[0] if isinstance(label, list) else label)
+    except Exception:
+        labels = None
+
+    if not labels:
+        labels = [f"ch{i}" for i in range(data.shape[1])]
+
+    df = pd.DataFrame(data, columns=labels)
+
+    # apply channel name mapping from config if labels are generic
+    if channel_map:
+        df.rename(columns=channel_map, inplace=True)
+
+    df.insert(0, "timestamp", ts)
     return df
 
 
-def run_glmm_models_from_trials(trial_df: pd.DataFrame) -> pd.DataFrame:
-    group_cols = ["subject_id", "trial_id", "llm_provider", "prompt_type", "llm_model", "expertise"]
-    agg = {col: "last" for col in ("saved_victims", "step_count") if col in trial_df.columns}
-    return trial_df.groupby(group_cols, dropna=False).agg(agg).reset_index()
+# ---------------------------------------------------------------------------
+# Split by trial_id
+# ---------------------------------------------------------------------------
+
+def _split_by_trial(game_df: pd.DataFrame,
+                    eye_df: pd.DataFrame) -> dict[str, dict[str, pd.DataFrame]]:
+    """
+    Split game and eyetracker data into per-trial segments using trial_id.
+    Uses the time range of each trial block to slice the eyetracker.
+    """
+    if "trial_id" not in game_df.columns:
+        raise ValueError(f"Field 'trial_id' not found in game stream. "
+                         f"Available: {list(game_df.columns)}")
+
+    result = {}
+    for trial_id, group in game_df.groupby("trial_id", sort=False):
+        t_start = group["timestamp"].iloc[0]
+        t_end   = group["timestamp"].iloc[-1]
+
+        eye_mask = (eye_df["timestamp"] >= t_start) & (eye_df["timestamp"] <= t_end)
+
+        result[trial_id] = {
+            "game":       group.reset_index(drop=True),
+            "eyetracker": eye_df[eye_mask].reset_index(drop=True),
+        }
+
+    return result
 
 
-def _normalize_model_df(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.copy()
-    for target, source in [("participant_id", "subject_id"), ("llm_provider", "AI"), ("prompt_type", "Prompt")]:
-        if target not in df.columns and source in df.columns:
-            df[target] = df[source]
-    mapping = {0: "sparse", 1: "detailed", "0": "sparse", "1": "detailed"}
-    if "prompt_type" not in df.columns and "Detailed" in df.columns:
-        df["prompt_type"] = df["Detailed"].map(mapping)
-    if "llm_provider" not in df.columns and "Gemini" in df.columns:
-        df["llm_provider"] = df["Gemini"].map({0: "other", 1: "gemini", "0": "other", "1": "gemini"})
-    if "expertise" not in df.columns:
-        df["expertise"] = "unknown"
-    df["participant_id"] = df["participant_id"].astype(str)
-    for col in ("llm_provider", "prompt_type"):
-        df[col] = df[col].fillna("unknown").astype(str)
-    df["expertise"] = df["expertise"].fillna("unknown").astype(str).str.strip().str.lower()
-    valid = {"expert": "expert", "novice": "novice", "unknown": "unknown", "": "unknown"}
-    df["expertise"] = df["expertise"].map(valid).fillna(df["expertise"])
-    invalid = sorted(set(df["expertise"].dropna()) - {"expert", "novice", "unknown"})
-    if invalid:
-        raise ValueError(f"Invalid expertise value(s). Use only 'expert' or 'novice': {invalid}")
-    return df
+# ---------------------------------------------------------------------------
+# Per-subject loader
+# ---------------------------------------------------------------------------
+
+def load_subject(xdf_path: str | Path, config: dict) -> dict[str, dict[str, pd.DataFrame]]:
+    """Load one XDF file and return data split by LLM model."""
+    streams_cfg = config["streams"]
+    game_name   = streams_cfg["game"]
+    eye_name    = streams_cfg["eyetracker"]
+
+    streams, _ = pyxdf.load_xdf(str(xdf_path))
+
+    game_stream = _get_stream(streams, game_name)
+    eye_stream  = _get_stream(streams, eye_name)
+
+    if game_stream is None:
+        raise RuntimeError(f"Game stream '{game_name}' not found in {xdf_path}")
+    if eye_stream is None:
+        raise RuntimeError(f"Eyetracker stream '{eye_name}' not found in {xdf_path}")
+
+    channel_map = streams_cfg.get("eyetracker_channels", {})
+    game_df = _parse_game_stream(game_stream)
+    eye_df  = _parse_eye_stream(eye_stream, channel_map=channel_map)
+
+    return _split_by_trial(game_df, eye_df)
 
 
-def prepare_glmm_df(config_path: str | Path) -> pd.DataFrame:
-    df = _normalize_model_df(run_glmm_models_from_trials(extract_trials_from_xdf(config_path)))
-    df["trial_id"] = pd.to_numeric(df["trial_id"], errors="coerce")
-    for metrics in _load_eye_metric_summaries(Path(config_path)):
-        if not metrics.empty:
-            df = df.merge(metrics, on=TRIAL_MERGE_KEYS, how="left")
-    df["Gemini"] = df["llm_model"].astype(str).str.lower().str.contains("gemini").astype(int)
-    df["Detailed"] = df["prompt_type"].astype(str).str.lower().str.contains("detail").astype(int)
-    for col in COUNT_OUTCOMES + CONTINUOUS_OUTCOMES:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
-    for col in ("saved_victims", "step_count"):
-        if col in df.columns:
-            df[col] = df[col].fillna(0).astype(int)
-    return df
+# ---------------------------------------------------------------------------
+# Load all subjects
+# ---------------------------------------------------------------------------
+
+def load_all(config: dict,
+             data_dir: str | Path = "data",
+             verbose: bool = True) -> dict[str, dict[str, dict[str, pd.DataFrame]]]:
+    """
+    Load all subjects listed in config.
+
+    Returns:
+        data[subject_id][llm_model]["game"]       -> DataFrame
+        data[subject_id][llm_model]["eyetracker"] -> DataFrame
+    """
+    data_dir = Path(data_dir)
+    subjects = config.get("subjects", [])
+    result   = {}
+
+    for entry in subjects:
+        sid      = entry["id"] if isinstance(entry, dict) else entry
+        xdf_path = find_xdf(data_dir, sid)
+
+        if xdf_path is None:
+            if verbose:
+                print(f"[SKIP] {sid}: no XDF file found in {data_dir}")
+            continue
+
+        if verbose:
+            print(f"[LOAD] {sid}: {xdf_path.name}")
+
+        try:
+            result[sid] = load_subject(xdf_path, config)
+            if verbose:
+                for model, streams in result[sid].items():
+                    g = streams["game"]
+                    e = streams["eyetracker"]
+                    print(f"       {model:30s}  game={len(g):>6} rows  eye={len(e):>8} rows")
+        except Exception as exc:
+            if verbose:
+                print(f"[ERROR] {sid}: {exc}")
+
+    return result
 
 
-def _fixed_effects_formula(outcome: str, df: pd.DataFrame) -> str:
-    return f"{outcome} ~ C(llm_provider) * C(prompt_type)" + (
-        " + C(expertise)" if "expertise" in df.columns and df["expertise"].nunique(dropna=True) > 1 else ""
-    )
+# ---------------------------------------------------------------------------
+# Save to disk
+# ---------------------------------------------------------------------------
+
+def save_all(data: dict, config: dict) -> None:
+    """
+    Save loaded data to disk as CSV, Parquet, and HDF5.
+    Output path is built from config output_template:
+        data/{subject}/{llm_model}/{stream}
+    """
+    template = config.get("xdf", {}).get("output_template", "data/{subject}/{llm_model}/{stream}")
+
+    for sid, models in data.items():
+        for model, streams in models.items():
+            safe_model = model.replace("/", "-").replace(" ", "_")
+            for key in ("game", "eyetracker"):
+                df      = streams[key]
+                out_dir = Path(template.format(subject=sid, llm_model=safe_model, stream=key))
+                out_dir.mkdir(parents=True, exist_ok=True)
+                df.to_csv(out_dir / f"{key}.csv", index=False)
+                df.to_parquet(out_dir / f"{key}.parquet", index=False)
+                df.to_hdf(out_dir / f"{key}.h5", key=key, mode="w")
+                print(f"  saved  data/{sid}/{safe_model}/{key}  ({len(df)} rows)")
 
 
-def _fit_mixedlm(df: pd.DataFrame, outcome: str):
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", RuntimeWarning)
-        warnings.simplefilter("ignore", ConvergenceWarning)
-        return smf.mixedlm(_fixed_effects_formula(outcome, df), df, groups=df["participant_id"]).fit()
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
 
+if __name__ == "__main__":
+    config_path = Path(__file__).parent / "config.yaml"
+    with open(config_path) as f:
+        config = yaml.safe_load(f)
 
-def _fit_poisson_glmm(df: pd.DataFrame, outcome: str):
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", RuntimeWarning)
-        warnings.simplefilter("ignore", ConvergenceWarning)
-        return PoissonBayesMixedGLM.from_formula(
-            _fixed_effects_formula(outcome, df), {"participant": "0 + C(participant_id)"}, df
-        ).fit_vb()
+    data = load_all(config, data_dir="data")
 
-
-def _run_outcome_models(df: pd.DataFrame, outcomes: list[str], fit_fn) -> dict[str, object]:
-    results = {}
-    for outcome in outcomes:
-        if outcome in df.columns and len(df.dropna(subset=[outcome])):
-            with suppress(Exception):
-                results[outcome] = fit_fn(df.dropna(subset=[outcome]).copy(), outcome)
-    return results
-
-
-def run_glmm_models(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    df = _normalize_model_df(df)
-    for col in COUNT_OUTCOMES + CONTINUOUS_OUTCOMES:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
-    df = df.dropna(subset=["participant_id", "llm_provider", "prompt_type"]).copy()
-    mixed = _run_outcome_models(df, CONTINUOUS_OUTCOMES, _fit_mixedlm)
-    count = _run_outcome_models(df, COUNT_OUTCOMES, _fit_poisson_glmm)
-    mixed_rows = [
-        {"outcome": outcome, "term": term, "coef": model.params[term], "se": model.bse.get(term)}
-        for outcome, model in mixed.items()
-        for term in model.params.index
-    ]
-    count_rows = [
-        {"outcome": outcome, "term": term, "coef": coef}
-        for outcome, model in count.items()
-        for term, coef in zip(model.model.exog_names, model.fe_mean)
-    ]
-    return pd.DataFrame(mixed_rows), pd.DataFrame(count_rows)
+    print(f"\nSaving {len(data)} subject(s)...")
+    save_all(data, config)

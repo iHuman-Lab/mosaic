@@ -1,66 +1,83 @@
-  subjects:
-    - subject_id: "1"
-      file: "data/sub-P001_ses-S001_task-Default_run-001_sar.xdf"
-      expertise: "novice"
-    - subject_id: "2"
-      file: "data/sub-P002_ses-S001_task-Default_run-001_sar.xdf"
-      expertise: "novice"
-    - subject_id: "3"
-      file: "data/sub-P003_ses-S001_task-Default_run-001_sar.xdf"
-      expertise: "novice"
-    - subject_id: "4"
-      file: "data/sub-P004_ses-S001_task-Default_run-001_sar.xdf"
-      expertise: "novice"
-    - subject_id: "5"
-      file: "data/sub-P005_ses-S001_task-Default_run-001_sar.xdf"
-      expertise: "novice"
-    - subject_id: "6"
-      file: "data/sub-P006_ses-S001_task-Default_run-001_sar.xdf"
-      expertise: "novice"
-    - subject_id: "7"
-      file: "data/sub-P007_ses-S001_task-Default_run-001_sar.xdf"
-      expertise: "expert"
-    - subject_id: "8"
-      file: "data/sub-P008_ses-S001_task-Default_run-001_sar.xdf"
-      expertise: "expert"
-    - subject_id: "9"
-      file: "data/sub-P009_ses-S001_task-Default_run-001_sar.xdf"
-      expertise: "expert"
-    - subject_id: "10"
-      file: "data/sub-P010_ses-S001_task-Default_run-001_sar.xdf"
-      expertise: "expert"
-    - subject_id: "11"
-      file: "data/sub-P011_ses-S001_task-Default_run-001_sar.xdf"
-      expertise: "expert"
-    - subject_id: "12"
-      file: "data/sub-P012_ses-S001_task-Default_run-001_sar.xdf"
-      expertise: "expert"
-
+subjects:
+- id: p001
+- id: p002
+- id: p003
+- id: p004
+- id: p005
+- id: p006
+- id: p007
+- id: p008
+- id: p009
+- id: p010
+- id: p011
+- id: p012
+xdf:
+  file_template: data/sub-{subject}/ses-S001/sarmission/sub-{subject}_ses-S001_task-Default_run-001_sarmission.xdf
+  output_template: data/{subject}/{llm_model}/{stream}
+  llm_types:
+  - gemini
+  - chatgpt
+  - no_llm
+  condition_markers:
+    gemini:
+      start: llm_start:gemini
+      end: llm_end:gemini
+    chatgpt:
+      start: llm_start:chatgpt
+      end: llm_end:chatgpt
+    no_llm:
+      start: llm_start:no_llm
+      end: llm_end:no_llm
+  stream_keywords:
+    eyetracking:
+    - gaze
+    - eye
+    - pupil
+    - eyetracking
+    - tobii
+    - gazepoint
+    game:
+    - game
+    - unity
+    - marker
+    - events
+    - rescue
 glmm:
-    files:
-      trial_data: ""
-      eyetracker_timeline: ""
-      llm_periods: ""
-      fixations_summary: ""
-      fixations_summary_aio: ""
-      fixations_long: ""
-      fixations_long_aio: ""
-      saccades_summary: ""
-      saccades_long: ""
-    merge_keys:
-      - participant_id
-      - trial_id
-      - llm_provider
-      - prompt_type
-      - llm_model
-  synthetic_conditions:
-    enabled: true
-    providers:
-      - gemini
-      - chatgpt
-    prompts:
-      - detailed
-      - sparse
-    provider_models:
-      gemini: gemini-1.5-flash
-      chatgpt: gpt-4o
+  files:
+    trial_data: ''
+    eyetracker_timeline: ''
+    llm_periods: ''
+    fixations_summary: ''
+    fixations_summary_aio: ''
+    fixations_long: ''
+    fixations_long_aio: ''
+    saccades_summary: ''
+    saccades_long: ''
+  merge_keys:
+  - participant_id
+  - trial_id
+  - llm_provider
+  - prompt_type
+  - llm_model
+synthetic_conditions:
+  enabled: true
+  providers:
+  - gemini
+  - chatgpt
+  prompts:
+  - detailed
+  - sparse
+  provider_models:
+    gemini: gemini-1.5-flash
+    chatgpt: gpt-4o
+streams:
+  game: SARGame
+  eyetracker: TobiiEyeTracker
+  llm_field: trial_id
+  eyetracker_channels:
+    ch0: left_gaze_x
+    ch1: left_gaze_y
+    ch2: right_gaze_x
+    ch3: right_gaze_y
+    ch4: left_pupil_diameter
+    ch5: right_pupil_diameter
