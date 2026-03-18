@@ -1,2 +1,7 @@
 # Ignore all data files and folders
 /data/
+
+*.pyc
+__pycache__/
+results/
+.env
