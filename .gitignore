@@ -1,6 +1,11 @@
 # Ignore all data files and folders
 /data/
 
+# Ignore all CSV, XDF, H5 files
+*.csv
+*.xdf
+*.h5
+
 *.pyc
 __pycache__/
 results/
