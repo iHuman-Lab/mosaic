@@ -1,10 +1,10 @@
 <div align="center">
 
-# 🚁 Rescue-Grid
+# 🧩 MOSAIC
 
-### *Search. Navigate. Rescue.*
+### *A Modular System for Adaptive Human–AI Collaboration*
 
-A Search and Rescue simulation environment where every second counts!
+A grid-based Search and Rescue simulation platform for studying human–AI teaming, where every second counts!
 
 Built on top of [MiniGrid](https://github.com/Farama-Foundation/Minigrid) 🎮
 
@@ -16,22 +16,24 @@ Built on top of [MiniGrid](https://github.com/Farama-Foundation/Minigrid) 🎮
 
 ---
 
-## 🎯 What is Rescue-Grid?
+## 🎯 What is MOSAIC?
 
-Imagine a building on fire. Victims are trapped. Some rooms are locked. Lava (yes, lava!) blocks your path. Your mission? **Save everyone before time runs out.**
+MOSAIC is named after the art of constructing a coherent picture from individual tiles. The platform combines modular components — simulation environments, AI agents, human interfaces, multimodal sensing, and analytics — to support reproducible Human–AI collaboration research. The name also reflects the grid-based structure of the underlying environments, where complex collaborative behaviors emerge from interactions within a tiled world.
 
-Rescue-Grid is a reinforcement learning environment that puts your agent in high-stakes rescue scenarios. Can your AI learn to be a hero?
+Its first testbed is a search-and-rescue scenario: a building on fire, victims trapped, some rooms locked, lava blocking your path. Your mission — human, AI, or both together — is to save everyone before time runs out. But MOSAIC isn't tied to search and rescue; the same modular pieces can support other collaborative domains as the platform grows.
 
 ## ✨ Features
 
 | Feature                    | Description                                               |
-| -------------------------- | --------------------------------------------------------- |
+| --------------------------- | --------------------------------------------------------- |
 | 🏢 **Multi-Room Layouts**   | Navigate through configurable grid-based buildings        |
 | 🎯 **Real vs Fake Victims** | Distinguish cross-shaped victims ✚ from T-shaped decoys ⊤ |
 | 🔥 **Lava Hazards**         | One wrong step and it's game over!                        |
 | 🔐 **Locked Rooms**         | Find keys to unlock doors and reach trapped victims       |
-| 🎮 **Interactive GUI**      | Beautiful Pygame interface with real-time info            |
+| 🎮 **Interactive GUI**      | Beautiful Pygame interface with real-time info             |
 | 🤖 **RL-Ready**             | Gymnasium compatible for training your rescue agents      |
+| 📡 **Lab Streaming Layer**  | Sync with eye trackers, EEG, and other physiological sensors |
+| 🧠 **LLM Integration**      | Prompt-driven agent reasoning via a pluggable LLM client   |
 
 ## 🚀 Quick Start
 
@@ -39,8 +41,8 @@ Rescue-Grid is a reinforcement learning environment that puts your agent in high
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/Rescue-Grid.git
-cd Rescue-Grid
+git clone https://github.com/yourusername/mosaic.git
+cd mosaic
 
 # Install dependencies
 pip install -r requirements.txt
@@ -51,7 +53,7 @@ pip install minigrid pygame pygame_gui pyyaml
 
 ```python
 from game.sar.env import PickupVictimEnv
-from game.sar.utils import VictimPlacer
+from game.sar.placers import VictimPlacer
 from game.gui.main import SAREnvGUI
 
 # Set up the mission
@@ -96,7 +98,7 @@ gui.run()
 ## 🎮 Controls
 
 | Key     | Action                       |
-| ------- | ---------------------------- |
+| ------- | ----------------------------- |
 | ⬆️       | Move forward                 |
 | ⬅️ ➡️     | Rotate left/right            |
 | `Space` | Toggle/interact (open doors) |
@@ -112,9 +114,12 @@ src/
 ├── game/
 │   ├── core/          # 🏗️ Base environment & level generation
 │   ├── gui/           # 🖼️ Pygame GUI components
-│   └── sar/           # 🚨 SAR-specific logic & objects
-├── main.py            # 🚀 Entry point
-└── utils.py           # 🔧 Utility functions
+│   ├── sar/           # 🚨 SAR-specific logic & objects
+│   └── llm/           # 🧠 LLM-driven agent reasoning
+├── experiment/         # 🧪 Human-subject experiment runner & sensors
+│   └── sensors/        #    LSL-synced sensors (eye tracker, EEG, etc.)
+├── main.py             # 🚀 Entry point
+└── experiment_main.py  # 🧪 Experiment entry point
 ```
 
 ## 🤝 Contributing
@@ -129,8 +134,8 @@ MIT License - Feel free to use this for your research!
 
 <div align="center">
 
-**Built with ❤️ for the RL research community**
+**Built with ❤️ for the Human–AI collaboration research community**
 
-*Remember: In Rescue-Grid, heroes aren't born — they're trained!*
+*MOSAIC: many pieces, one picture.*
 
 </div>
