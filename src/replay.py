@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pygame
 
-from game.sar.observations import (
+from mosaic.sar.observations import (
     EMPTY,
     FAKE_VICTIM,
     LAVA,

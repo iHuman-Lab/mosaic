@@ -52,9 +52,9 @@ pip install minigrid pygame pygame_gui pyyaml
 ### Run Your First Rescue Mission
 
 ```python
-from game.sar.env import PickupVictimEnv
-from game.sar.placers import VictimPlacer
-from game.gui.main import SAREnvGUI
+from mosaic.sar.env import PickupVictimEnv
+from mosaic.sar.placers import VictimPlacer
+from mosaic.gui.main import SAREnvGUI
 
 # Set up the mission
 victim_placer = VictimPlacer(
@@ -111,7 +111,7 @@ gui.run()
 
 ```
 src/
-├── game/
+├── mosaic/
 │   ├── core/          # 🏗️ Base environment & level generation
 │   ├── gui/           # 🖼️ Pygame GUI components
 │   ├── sar/           # 🚨 SAR-specific logic & objects

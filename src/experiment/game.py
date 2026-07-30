@@ -5,9 +5,9 @@ from typing import Any
 
 import pygame
 import ujson
-from game.core.camera import AgentFOVCamera
-from game.gui.main import SAREnvGUI
-from game.sar.env import build_sar_env
+from mosaic.core.camera import AgentFOVCamera
+from mosaic.gui.main import SAREnvGUI
+from mosaic.sar.env import build_sar_env
 from ixp.task import Block, LSLTrial, Task
 
 

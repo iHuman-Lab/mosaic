@@ -4,7 +4,7 @@ Test script to verify that all victims are reachable from agent start position.
 This test creates multiple environments and verifies reachability.
 """
 
-from src.game.sar.env import PickupVictimEnv
+from src.mosaic.sar.env import PickupVictimEnv
 
 
 def test_victim_reachability(num_tests=10):

@@ -3,7 +3,7 @@
 Test reachability with unblocking=False to ensure all victims are directly reachable.
 """
 
-from src.game.sar.env import PickupVictimEnv
+from src.mosaic.sar.env import PickupVictimEnv
 
 
 def test_strict_reachability(num_tests=5):

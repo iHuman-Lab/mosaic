@@ -51,7 +51,7 @@ class SAREnvGUI:
 
     def _create_panels(self):
         """Create (or recreate) the UI manager and side panels."""
-        self.manager = pygame_gui.UIManager(self.window_size, "src/game/gui/theme.json")
+        self.manager = pygame_gui.UIManager(self.window_size, "src/mosaic/gui/theme.json")
         chat_height = self.game_size // 2
         info_height = self.game_size - chat_height
         self.info_panel = InfoPanel(

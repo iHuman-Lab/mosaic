@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 import yaml
-from game.sar.observations import (
+from mosaic.sar.observations import (
     FAKE_VICTIM,
     LAVA,
     VICTIM,

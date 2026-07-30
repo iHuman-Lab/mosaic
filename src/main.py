@@ -2,12 +2,12 @@ import pygame
 import yaml
 from dotenv import load_dotenv
 
-from game.core.camera import AgentConeCamera
-from game.gui.main import SAREnvGUI
-from game.sar.env import build_sar_env
+from mosaic.core.camera import AgentConeCamera
+from mosaic.gui.main import SAREnvGUI
+from mosaic.sar.env import build_sar_env
 
 try:
-    from game.tutorial_env import TutorialEnv
+    from mosaic.tutorial_env import TutorialEnv
 except ImportError:
     pass
 from utils import skip_run

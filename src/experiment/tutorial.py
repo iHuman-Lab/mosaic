@@ -6,8 +6,8 @@ from typing import Any
 import pygame
 from ixp.task import Task
 
-from game.gui.main import SAREnvGUI
-from game.tutorial_env import TutorialEnv
+from mosaic.gui.main import SAREnvGUI
+from mosaic.tutorial_env import TutorialEnv
 
 
 class SARTutorial(Task):

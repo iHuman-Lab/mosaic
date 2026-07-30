@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections import deque
 from dataclasses import dataclass
 
-from game.sar.observations import (
+from mosaic.sar.observations import (
     _COLORS,
     DOOR_BASE,
     KEY_BASE,

@@ -1,6 +1,6 @@
-# Rescue-Grid Reference Guide
+# MOSAIC Reference Guide
 
-A comprehensive reference for developers, researchers, and contributors working with the Rescue-Grid codebase.
+A comprehensive reference for developers, researchers, and contributors working with the MOSAIC codebase.
 
 ---
 
@@ -35,7 +35,7 @@ A comprehensive reference for developers, researchers, and contributors working 
 
 ## Overview
 
-**Rescue-Grid** is a grid-based Search and Rescue (SAR) simulation environment built on top of [MiniGrid](https://github.com/Farama-Foundation/Minigrid). It is designed for two purposes:
+**MOSAIC** is a modular platform for Human–AI collaboration research, built on top of [MiniGrid](https://github.com/Farama-Foundation/Minigrid). Its first testbed is a grid-based Search and Rescue (SAR) simulation environment, designed for two purposes:
 
 1. **Interactive gameplay** — A human player navigates a multi-room building, rescues real victims, avoids decoys, and manages hazards under time pressure.
 2. **Research platform** — A fully instrumented environment for studying human cognition, human-AI collaboration, and visual attention, with support for eye-tracking (Tobii), LLM-powered AI assistance, and cognitive surveys.
@@ -47,13 +47,13 @@ A comprehensive reference for developers, researchers, and contributors working 
 ## Project Structure
 
 ```
-rescue-grid/
+mosaic/
 ├── src/
 │   ├── main.py                  # Entry point: interactive GUI mode
 │   ├── experiment_main.py       # Entry point: full research experiment
 │   ├── replay.py                # Replay recorded sessions
 │   ├── utils.py                 # Utility classes (ColorPrint, skip_run)
-│   └── game/
+│   └── mosaic/
 │       ├── core/
 │       │   ├── camera.py        # Camera strategy implementations
 │       │   └── level.py         # SARLevelGen base class
@@ -63,7 +63,7 @@ rescue-grid/
 │       │   ├── actions.py       # RescueAction with reward logic
 │       │   ├── observations.py  # GameObservation processor
 │       │   ├── instructions.py  # PickupAllVictimsInstr mission
-│       │   └── utils.py         # VictimPlacer and LavaPlacer
+│       │   └── placers.py       # VictimPlacer and LavaPlacer
 │       ├── gui/
 │       │   ├── main.py          # SAREnvGUI controller
 │       │   ├── user.py          # Keyboard input + LLM threading
@@ -90,8 +90,7 @@ rescue-grid/
 │   └── playground.py
 ├── docs/
 ├── requirements.txt
-├── setup.py
-└── Makefile
+└── pyproject.toml
 ```
 
 ---
@@ -109,7 +108,7 @@ rescue-grid/
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd rescue-grid
+cd mosaic
 
 # Install dependencies
 pip install -r requirements.txt
@@ -246,7 +245,7 @@ SAREnvGUI.render()
 
 ### Environment
 
-**Class:** `PickupVictimEnv` — `src/game/sar/env.py`
+**Class:** `PickupVictimEnv` — `src/mosaic/sar/env.py`
 
 The main Gymnasium-compatible environment. Inherits from `SARLevelGen`.
 
@@ -276,7 +275,7 @@ The main Gymnasium-compatible environment. Inherits from `SARLevelGen`.
 
 ### Level Generation
 
-**Class:** `SARLevelGen` — `src/game/core/level.py`
+**Class:** `SARLevelGen` — `src/mosaic/core/level.py`
 
 Inherits from MiniGrid's `MiniGridEnv`. Provides:
 - Multi-room grid construction
@@ -289,7 +288,7 @@ Subclassed by `PickupVictimEnv` and `TutorialEnv`.
 
 ### Victim System
 
-**File:** `src/game/sar/objects.py`
+**File:** `src/mosaic/sar/objects.py`
 
 #### Real Victims (`Victim`)
 
@@ -305,7 +304,7 @@ Subclassed by `PickupVictimEnv` and `TutorialEnv`.
 - Same health depletion system as real victims
 - Penalty on accidental rescue: **-0.5**
 
-#### Placement (`VictimPlacer`) — `src/game/sar/utils.py`
+#### Placement (`VictimPlacer`) — `src/mosaic/sar/placers.py`
 
 - Real victims placed preferentially in locked rooms (harder to reach)
 - Fake victims distributed across all accessible rooms
@@ -315,7 +314,7 @@ Subclassed by `PickupVictimEnv` and `TutorialEnv`.
 
 ### Hazards & Obstacles
 
-**Lava** (`LavaPlacer`) — `src/game/sar/utils.py`
+**Lava** (`LavaPlacer`) — `src/mosaic/sar/placers.py`
 
 - Placed randomly within rooms, avoiding doorways and agent spawn
 - Stepping on lava immediately terminates the episode with failure
@@ -331,7 +330,7 @@ Subclassed by `PickupVictimEnv` and `TutorialEnv`.
 
 ### Mission System
 
-**Class:** `PickupAllVictimsInstr` — `src/game/sar/instructions.py`
+**Class:** `PickupAllVictimsInstr` — `src/mosaic/sar/instructions.py`
 
 Manages mission completion logic:
 - Tracks rescued vs. remaining real victims
@@ -355,7 +354,7 @@ Where:
 
 ### Camera System
 
-**File:** `src/game/core/camera.py`
+**File:** `src/mosaic/core/camera.py`
 
 Four interchangeable camera strategies:
 
@@ -384,7 +383,7 @@ env.switch_camera("edge_follow")   # or "full", "centered", "fov", "cone"
 
 ### Observation Encoding
 
-**Class:** `GameObservation` — `src/game/sar/observations.py`
+**Class:** `GameObservation` — `src/mosaic/sar/observations.py`
 
 Returns a dict on each step:
 
@@ -427,7 +426,7 @@ Keys:   30 + color_index
 
 ### Reward System
 
-**Class:** `RescueAction` — `src/game/sar/actions.py`
+**Class:** `RescueAction` — `src/mosaic/sar/actions.py`
 
 All rewards are sparse (returned only on specific events):
 
@@ -443,7 +442,7 @@ All rewards are sparse (returned only on specific events):
 
 ## GUI Components
 
-### Main Window (`SAREnvGUI`) — `src/game/gui/main.py`
+### Main Window (`SAREnvGUI`) — `src/mosaic/gui/main.py`
 
 The top-level Pygame controller. Layout:
 
@@ -465,7 +464,7 @@ The top-level Pygame controller. Layout:
 
 ---
 
-### InfoPanel — `src/game/gui/info.py`
+### InfoPanel — `src/mosaic/gui/info.py`
 
 Displays mission-critical information on the right panel:
 
@@ -481,7 +480,7 @@ Displays mission-critical information on the right panel:
 
 ---
 
-### ChatPanel — `src/game/gui/chat.py`
+### ChatPanel — `src/mosaic/gui/chat.py`
 
 Displays messages from the LLM assistant:
 - New messages cause a **blinking highlight** effect
@@ -490,7 +489,7 @@ Displays messages from the LLM assistant:
 
 ---
 
-### User Input (`ManualControl` subclass) — `src/game/gui/user.py`
+### User Input (`ManualControl` subclass) — `src/mosaic/gui/user.py`
 
 Handles all keyboard input and dispatches:
 - Movement and interaction actions to `env.step()`
@@ -501,7 +500,7 @@ Handles all keyboard input and dispatches:
 
 ## LLM Integration
 
-**Files:** `src/game/llm/`
+**Files:** `src/mosaic/llm/`
 
 ### Supported Providers
 
@@ -669,7 +668,7 @@ The replay reconstructs each frame from the encoded `grid` field in the recordin
 
 ## Key Classes & APIs
 
-### `PickupVictimEnv` (`src/game/sar/env.py`)
+### `PickupVictimEnv` (`src/mosaic/sar/env.py`)
 
 ```python
 env = PickupVictimEnv(
@@ -685,14 +684,14 @@ status = env.get_mission_status()
 # status = {"status": "incomplete", "saved_victims": 1, "remaining_victims": 2}
 ```
 
-### `SAREnvGUI` (`src/game/gui/main.py`)
+### `SAREnvGUI` (`src/mosaic/gui/main.py`)
 
 ```python
 gui = SAREnvGUI(env, config)
 gui.run()  # Blocking Pygame loop
 ```
 
-### `GameObservation` (`src/game/sar/observations.py`)
+### `GameObservation` (`src/mosaic/sar/observations.py`)
 
 ```python
 obs_processor = GameObservation(env)
@@ -702,7 +701,7 @@ obs = obs_processor.process()  # Returns observation dict
 ### `build_sar_env()` (factory)
 
 ```python
-from game.sar.env import build_sar_env
+from mosaic.sar.env import build_sar_env
 env = build_sar_env(config_dict)
 ```
 
@@ -716,10 +715,10 @@ env.switch_camera("fov")           # AgentFOVCamera
 env.switch_camera("cone")          # AgentConeCamera
 ```
 
-### LLM Client (`src/game/llm/client.py`)
+### LLM Client (`src/mosaic/llm/client.py`)
 
 ```python
-from game.llm.client import build_llm_client
+from mosaic.llm.client import build_llm_client
 client = build_llm_client(provider="openai", model="gpt-4o-mini")
 response = client.query(prompt_string)
 ```

@@ -2,3 +2,6 @@
 __pycache__/
 results/
 .env
+.DS_Store
+*.egg-info/
+.pytest_cache/

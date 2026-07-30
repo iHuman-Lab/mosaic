@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mosaic"
+version = "0.1.0"
+description = "A modular platform for Human-AI collaboration research"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Elahe Oveisi" }]
+requires-python = ">=3.8"
+dependencies = [
+    "minigrid",
+    "pygame",
+    "pygame_gui",
+    "numpy",
+    "pandas",
+    "pyyaml",
+    "llama_index",
+    "python-dotenv",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["experiment", "experiment.*"]
