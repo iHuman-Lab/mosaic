@@ -253,7 +253,7 @@ class PickupVictimEnv(SARLevelGen):
             obs, reward, terminated, truncated, info = self._step(action)
         return obs, reward, terminated, truncated, info
 
-    def show_all_victim_batteries(self, seconds: float = 10.0):
+    def show_all_victim_batteries(self, seconds: float = 5.0):
         self.victim_tracker.show_visible_batteries(
             self.camera, self.width, self.height, seconds
         )

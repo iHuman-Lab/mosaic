@@ -288,7 +288,7 @@ class VictimTracker:
         ]
 
     def show_visible_batteries(
-        self, camera, grid_width, grid_height, seconds: float = 10.0
+        self, camera, grid_width, grid_height, seconds: float = 5.0
     ):
         for _, _, obj in self._visible(camera, grid_width, grid_height):
             obj.show_battery(seconds)
