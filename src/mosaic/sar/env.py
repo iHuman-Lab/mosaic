@@ -5,7 +5,28 @@ from .actions import RescueAction
 from .instructions import PickupAllVictimsInstr, calculate_max_steps
 from .objects import REAL_VICTIMS
 from .observations import GameObservation
-from .placers import LavaPlacer, LockedRoomPlacer, VictimPlacer, VictimTracker
+from .placers import LavaPlacer, LockedRoomPlacer, Placer, VictimPlacer, VictimTracker
+
+
+def _resolve_placer(placer, default_factory, name):
+    """Return the supplied placer, or build the default when none was given.
+
+    Args:
+        placer: A Placer instance, or None to use the default.
+        default_factory: Zero-argument callable building the default placer.
+        name: Parameter name, used in the error message.
+
+    Returns:
+        Placer: The placer to use.
+
+    Raises:
+        TypeError: If placer is not None and does not implement Placer.
+    """
+    if placer is None:
+        return default_factory()
+    if not isinstance(placer, Placer):
+        raise TypeError(f"{name} must implement Placer, got {type(placer).__name__}")
+    return placer
 
 
 def build_sar_env(
@@ -18,14 +39,23 @@ def build_sar_env(
     lava_per_room: int = 8,
     locked_room_prob: float = 0.35,
     tile_size: int = 64,
+    victim_placer=None,
+    lava_placer=None,
+    locked_room_placer=None,
     **kwargs,
 ) -> "PickupVictimEnv":
-    """Factory that creates a fully configured PickupVictimEnv."""
-    victim_placer = VictimPlacer(
-        num_fake_victims=num_fake_victims,
-        num_real_victims=num_real_victims,
-        important_victim=important_victim,
-    )
+    """Factory that creates a fully configured PickupVictimEnv.
+
+    The placers default to the standard implementations, configured from the
+    scalar arguments above. Passing a placer explicitly overrides that, and the
+    scalars it would have consumed are ignored.
+    """
+    if victim_placer is None:
+        victim_placer = VictimPlacer(
+            num_fake_victims=num_fake_victims,
+            num_real_victims=num_real_victims,
+            important_victim=important_victim,
+        )
     return PickupVictimEnv(
         num_rows=num_rows,
         num_cols=num_cols,
@@ -37,6 +67,8 @@ def build_sar_env(
         locked_room_prob=locked_room_prob,
         tile_size=tile_size,
         victim_placer=victim_placer,
+        lava_placer=lava_placer,
+        locked_room_placer=locked_room_placer,
         **kwargs,
     )
 
@@ -54,6 +86,8 @@ class PickupVictimEnv(SARLevelGen):
         lava_probability=0.5,
         locked_room_prob=0.5,
         victim_placer=None,
+        lava_placer=None,
+        locked_room_placer=None,
         **kwargs,
     ):
         # We add many distractors to increase the probability
@@ -68,14 +102,35 @@ class PickupVictimEnv(SARLevelGen):
             implicit_unlock=False,
             **kwargs,
         )
-        self.victim_placer = victim_placer
-        self.victim_tracker = VictimTracker()
-        self.locked_room_placer = LockedRoomPlacer(locked_room_prob)
-        self.lava_placer = LavaPlacer(
-            lava_per_room=lava_per_room,
-            lava_probability=lava_probability,
-            enabled=add_lava,
+        # Each placer defaults to the standard implementation configured from the
+        # scalar arguments; an explicitly supplied placer wins and those scalars
+        # are ignored for it.
+        self.victim_placer = _resolve_placer(
+            victim_placer, VictimPlacer, "victim_placer"
         )
+        self.locked_room_placer = _resolve_placer(
+            locked_room_placer,
+            lambda: LockedRoomPlacer(locked_room_prob),
+            "locked_room_placer",
+        )
+        self.lava_placer = _resolve_placer(
+            lava_placer,
+            lambda: LavaPlacer(
+                lava_per_room=lava_per_room,
+                lava_probability=lava_probability,
+                enabled=add_lava,
+            ),
+            "lava_placer",
+        )
+
+        # reset() sizes the step budget from this, but Placer does not declare it.
+        if not hasattr(self.victim_placer, "num_real_victims"):
+            raise TypeError(
+                "victim_placer must expose 'num_real_victims'; "
+                f"{type(self.victim_placer).__name__} does not"
+            )
+
+        self.victim_tracker = VictimTracker()
 
         # Custom actions
         self.rescue_action = RescueAction(self, fallback=self._step)
