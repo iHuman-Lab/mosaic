@@ -1,4 +1,5 @@
 import random
+from abc import ABC, abstractmethod
 
 from minigrid.core.world_object import Door, Lava
 
@@ -6,6 +7,18 @@ from .objects import REAL_VICTIMS, FakeVictim, Victim
 
 _NEIGHBORS_4 = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 _NEIGHBORS_8 = _NEIGHBORS_4 + [(-1, -1), (1, -1), (-1, 1), (1, 1)]
+
+
+class Placer(ABC):
+    """Places objects into a generated level.
+
+    Implementations mutate the level in place and return nothing, either by
+    writing to ``level_gen.grid`` directly or through the level generator's
+    helpers. Called from the environment's ``gen_mission()``.
+    """
+
+    @abstractmethod
+    def place_all(self, level_gen, num_rows: int, num_cols: int) -> None: ...
 
 
 def _sector_candidates(level_gen, room, n, excluded):
@@ -39,7 +52,7 @@ def _sector_candidates(level_gen, room, n, excluded):
         ]
 
 
-class LockedRoomPlacer:
+class LockedRoomPlacer(Placer):
     """Handles placement of locked rooms and their corresponding keys."""
 
     def __init__(self, locked_room_prob=0.35):
@@ -80,7 +93,7 @@ class LockedRoomPlacer:
             added += 1
 
 
-class VictimPlacer:
+class VictimPlacer(Placer):
     """Handles placement of victims and fake victims."""
 
     DIRECTIONS = ["up", "down", "left", "right"]
@@ -302,7 +315,7 @@ class VictimTracker:
             obj.deplete(deplete_amount)
 
 
-class LavaPlacer:
+class LavaPlacer(Placer):
     """Handles placement of lava obstacles in the environment."""
 
     def __init__(self, lava_per_room=0, lava_probability=0.3, enabled=True):
