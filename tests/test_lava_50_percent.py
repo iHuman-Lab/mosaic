@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.mosaic.sar.env import PickupVictimEnv
+from src.mosaic.sar.placers import LavaPlacer
 
 
 def count_lava_tiles(env):
@@ -54,8 +55,7 @@ def main():
         room_size=6,
         num_rows=num_rows,
         num_cols=num_cols,
-        add_lava=True,  # Default is now True
-        lava_probability=0.5,  # Default is now 0.5
+        lava_placer=LavaPlacer(lava_probability=0.5),
         render_mode=None,
     )
 

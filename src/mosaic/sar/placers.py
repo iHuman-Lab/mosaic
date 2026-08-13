@@ -3,22 +3,11 @@ from abc import ABC, abstractmethod
 
 from minigrid.core.world_object import Door, Lava
 
+from ..core.placers import Placer
 from .objects import REAL_VICTIMS, FakeVictim, Victim
 
 _NEIGHBORS_4 = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 _NEIGHBORS_8 = _NEIGHBORS_4 + [(-1, -1), (1, -1), (-1, 1), (1, 1)]
-
-
-class Placer(ABC):
-    """Places objects into a generated level.
-
-    Implementations mutate the level in place and return nothing, either by
-    writing to ``level_gen.grid`` directly or through the level generator's
-    helpers. Called from the environment's ``gen_mission()``.
-    """
-
-    @abstractmethod
-    def place_all(self, level_gen, num_rows: int, num_cols: int) -> None: ...
 
 
 def _sector_candidates(level_gen, room, n, excluded):
@@ -246,9 +235,7 @@ class VictimPlacer(Placer):
 
         # Cells immediately adjacent to any door — victims must not be placed here.
         door_forbidden = {
-            (dx + ox, dy + oy)
-            for dx, dy in door_positions
-            for ox, oy in _NEIGHBORS_4
+            (dx + ox, dy + oy) for dx, dy in door_positions for ox, oy in _NEIGHBORS_4
         }
 
         n = self.num_real_victims
@@ -268,11 +255,70 @@ class VictimPlacer(Placer):
                 self.place_fake_victims(level_gen, i, j, door_forbidden)
 
 
-class VictimTracker:
+class VictimTrackerBase(ABC):
+    """Abstract base class for tracking this episode's victims.
+
+    Named around health (the value every tracker must manage), not battery
+    (today's specific visual widget for displaying it) — a custom tracker
+    without a battery-style UI still has an obvious health concept to implement.
+    """
+
+    def reset(self, level_gen) -> None:
+        """Re-scan the grid for this episode's victims. Called from gen_mission(),
+        after victim placement, since that's when the grid actually has this
+        episode's victims in it."""
+        self.initialize(level_gen.grid, level_gen.width, level_gen.height)
+
+    def tick(self, level_gen) -> None:
+        """Called once per env.step() for passive per-step effects (e.g. health
+        decay). No-op by default — a tracker with no health concept just never
+        overrides this."""
+        pass
+
+    @abstractmethod
+    def initialize(self, grid, width, height) -> None: ...
+
+    @property
+    @abstractmethod
+    def count(self) -> int: ...
+
+    @property
+    @abstractmethod
+    def total(self) -> int: ...
+
+    @abstractmethod
+    def get_victims(self) -> list: ...
+
+    @abstractmethod
+    def sync_after_pickup(self, grid) -> None: ...
+
+    def show_visible_health(
+        self, camera, grid_width, grid_height, seconds: float = 5.0
+    ) -> None:
+        """Optional: show a visual health indicator for visible victims. No-op by
+        default — only meaningful for trackers that use a health concept."""
+        pass
+
+    def hide_all_health(self) -> None:
+        """Optional: hide the visual health indicator. No-op by default."""
+        pass
+
+    def decay_health(self, camera, grid_width, grid_height, deplete_amount) -> None:
+        """Optional: decay health for visible victims. No-op by default."""
+        pass
+
+
+class VictimTracker(VictimTrackerBase):
     """Tracks alive victims, handles health decay and battery display."""
 
-    def __init__(self):
+    def __init__(self, deplete_amount_fn=None):
         self._positions = []  # list of (x, y, obj)
+        self._total = 0
+        self.deplete_amount_fn = deplete_amount_fn or (lambda max_steps: 1.0)
+
+    def tick(self, level_gen):
+        amount = self.deplete_amount_fn(level_gen.max_steps)
+        self.decay_health(level_gen.camera, level_gen.width, level_gen.height, amount)
 
     def initialize(self, grid, width, height):
         positions = []
@@ -282,10 +328,18 @@ class VictimTracker:
                 if isinstance(obj, REAL_VICTIMS):
                     positions.append((x, y, obj))
         self._positions = positions
+        self._total = len(positions)
 
     @property
     def count(self):
         return len(self._positions)
+
+    @property
+    def total(self):
+        return self._total
+
+    def get_victims(self):
+        return [obj for _, _, obj in self._positions]
 
     def sync_after_pickup(self, grid):
         self._positions = [
@@ -300,17 +354,17 @@ class VictimTracker:
             if x0 <= x < x1 and y0 <= y < y1
         ]
 
-    def show_visible_batteries(
+    def show_visible_health(
         self, camera, grid_width, grid_height, seconds: float = 5.0
     ):
         for _, _, obj in self._visible(camera, grid_width, grid_height):
             obj.show_battery(seconds)
 
-    def hide_all_batteries(self):
+    def hide_all_health(self):
         for _, _, obj in self._positions:
             obj.hide_battery()
 
-    def decay(self, camera, grid_width, grid_height, deplete_amount):
+    def decay_health(self, camera, grid_width, grid_height, deplete_amount):
         for _, _, obj in self._visible(camera, grid_width, grid_height):
             obj.deplete(deplete_amount)
 

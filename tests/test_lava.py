@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.mosaic.sar.env import PickupVictimEnv
+from src.mosaic.sar.placers import LavaPlacer
 
 
 def count_lava_tiles(env):
@@ -29,7 +30,11 @@ def test_no_lava():
     print("=" * 70)
 
     env = PickupVictimEnv(
-        room_size=6, num_rows=2, num_cols=2, add_lava=False, render_mode=None
+        room_size=6,
+        num_rows=2,
+        num_cols=2,
+        lava_placer=LavaPlacer(enabled=False),
+        render_mode=None,
     )
 
     obs, info = env.reset()
@@ -51,8 +56,7 @@ def test_lava_with_probability():
         room_size=6,
         num_rows=3,
         num_cols=3,
-        add_lava=True,
-        lava_probability=0.5,  # 50% chance per room
+        lava_placer=LavaPlacer(lava_probability=0.5),  # 50% chance per room
         render_mode=None,
     )
 
@@ -85,8 +89,7 @@ def test_lava_fixed_per_room():
         room_size=6,
         num_rows=num_rows,
         num_cols=num_cols,
-        add_lava=True,
-        lava_per_room=lava_per_room,
+        lava_placer=LavaPlacer(lava_per_room=lava_per_room),
         render_mode=None,
     )
 
@@ -111,8 +114,7 @@ def test_lava_with_reachability():
         room_size=6,
         num_rows=2,
         num_cols=2,
-        add_lava=True,
-        lava_probability=0.6,
+        lava_placer=LavaPlacer(lava_probability=0.6),
         unblocking=False,  # Enforce reachability
         render_mode=None,
     )
