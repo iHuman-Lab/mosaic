@@ -60,7 +60,6 @@ from mosaic.gui.main import SAREnvGUI
 victim_placer = VictimPlacer(
     num_fake_victims=5,    # 5 decoys to fool you
     num_real_victims=3,    # 3 real victims to save
-    important_victim="down"
 )
 
 # Create the environment

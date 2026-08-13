@@ -10,6 +10,8 @@ from mosaic.gui.main import SAREnvGUI
 from mosaic.sar.env import build_sar_env
 from ixp.task import Block, LSLTrial, Task
 
+from .placers import LavaRiskVictimPlacer
+
 
 def _show_break_screen(display: int = 0, recalibrate: bool = False) -> None:
     """Fullscreen PsychoPy break screen; waits for SPACE, then optionally recalibrates eye tracker."""
@@ -70,6 +72,7 @@ class SARGameTrial(LSLTrial):
             num_rows=config.get("num_rows"),
             num_cols=config.get("num_cols"),
             room_size=config.get("room_size", 14),
+            victim_placer_cls=LavaRiskVictimPlacer,
             camera_strategy=AgentFOVCamera(),
         )
         os.environ["SDL_VIDEO_FULLSCREEN_DISPLAY"] = str(config.get("display", 0))

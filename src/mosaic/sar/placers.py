@@ -83,89 +83,49 @@ class LockedRoomPlacer(Placer):
 
 
 class VictimPlacer(Placer):
-    """Handles placement of victims and fake victims."""
+    """Handles placement of victims and fake victims.
+
+    Placement only. Subclass and override the three hooks below to give
+    placement study-specific meaning.
+    """
 
     DIRECTIONS = ["up", "down", "left", "right"]
     SHIFTS = ["left", "right"]
 
-    _DEPLETE_RATES = {
-        "toward": {"near": 3.25, "medium": 2.2, "safe": 0.75, "door": 0.25},
-        "perp": {"near": 2.5, "medium": 1.0, "safe": 0.5, "door": 0.1},
-        "away": {"near": 1.5, "medium": 0.75, "safe": 0.25, "door": 0.05},
-    }
-    _STARTING_HEALTH = {"up": 0.90, "left": 0.75, "right": 0.75, "down": 0.60}
-
-    def __init__(self, num_fake_victims=3, num_real_victims=1, important_victim="up"):
+    def __init__(self, num_fake_victims=3, num_real_victims=1):
         self.num_fake_victims = num_fake_victims
         self.num_real_victims = num_real_victims
-        self.important_victim = important_victim
+
+    def prepare(self, level_gen) -> None:
+        """Per-placement-cycle setup hook, called at the top of place_all() once
+        lava and doors exist. No-op by default."""
+        pass
+
+    def victim_directions(self, level_gen, room, n) -> list:
+        """Return n victim directions for a room. Default: an even split."""
+        per_dir = n // 4
+        dirs = self.DIRECTIONS * per_dir + random.choices(
+            self.DIRECTIONS, k=n - 4 * per_dir
+        )
+        random.shuffle(dirs)
+        return dirs
+
+    def configure_victim(self, level_gen, room, victim, position) -> None:
+        """Adjust a victim just placed at position. No-op by default, leaving
+        VictimBase's health and deplete_rate untouched."""
+        pass
 
     def _make_victim(self, direction):
         return Victim(direction, color="red")
 
-    def _collect_lava_and_door_positions(self, level_gen):
-        """Single-pass scan returning (lava_positions, door_positions)."""
-
-        lava, doors = [], []
-        for y in range(level_gen.height):
-            for x in range(level_gen.width):
-                obj = level_gen.grid.get(x, y)
-                if isinstance(obj, Lava):
-                    lava.append((x, y))
-                elif isinstance(obj, Door):
-                    doors.append((x, y))
-        return lava, doors
-
-    def _lava_tier(self, d_lava, d_door):
-        """Classify distance into a deplete-rate tier."""
-        if d_door <= 2:
-            return "door"
-        if d_lava <= 2:
-            return "near"
-        if d_lava <= 5:
-            return "medium"
-        return "safe"
-
-    def _lava_orientation(self, direction, nearest_lava, pos):
-        """Return 'toward', 'away', or 'perp' relative to nearest lava."""
-        dx = nearest_lava[0] - pos[0]
-        dy = nearest_lava[1] - pos[1]
-        if abs(dx) >= abs(dy):
-            toward, away = ("right", "left") if dx > 0 else ("left", "right")
-        else:
-            toward, away = ("down", "up") if dy > 0 else ("up", "down")
-        if direction == toward:
-            return "toward"
-        if direction == away:
-            return "away"
-        return "perp"
-
-    def _assign_health(self, victim, pos, lava_positions, door_positions):
-        """Set victim.deplete_rate and victim.health based on proximity to lava and doors."""
-        direction = getattr(victim, "direction", None)
-
-        if direction == "down":
-            victim.deplete_rate, victim.health = 5.0, 0.75
-            return
-
-        if not lava_positions:
-            victim.deplete_rate, victim.health = 0.5, 0.90
-            return
-
-        nearest_lava = min(
-            lava_positions, key=lambda t: abs(pos[0] - t[0]) + abs(pos[1] - t[1])
-        )
-        d_lava = abs(pos[0] - nearest_lava[0]) + abs(pos[1] - nearest_lava[1])
-        d_door = min(
-            (abs(pos[0] - t[0]) + abs(pos[1] - t[1]) for t in door_positions),
-            default=float("inf"),
-        )
-
-        tier = self._lava_tier(d_lava, d_door)
-        orientation = self._lava_orientation(direction, nearest_lava, pos)
-
-        victim.deplete_rate = self._DEPLETE_RATES[orientation][tier]
-        victim.health = self._STARTING_HEALTH.get(direction, 0.90)
+    def _door_positions(self, level_gen):
+        """Single-pass scan for door cells."""
+        return [
+            (x, y)
+            for y in range(level_gen.height)
+            for x in range(level_gen.width)
+            if isinstance(level_gen.grid.get(x, y), Door)
+        ]
 
     def place_fake_victims(self, level_gen, i, j, forbidden):
         """Place fake victims in a room, never directly in front of a door."""
@@ -185,26 +145,7 @@ class VictimPlacer(Placer):
             )
             level_gen.grid.set(pos[0], pos[1], obj)
 
-    def _make_direction_list(self, n, locked):
-        """Return a shuffled list of n victim directions for a room."""
-        if locked:
-            return [self.important_victim] * n
-        per_dir = n // 4
-        dirs = self.DIRECTIONS * per_dir + random.choices(
-            self.DIRECTIONS, k=n - 4 * per_dir
-        )
-        random.shuffle(dirs)
-        return dirs
-
-    def _place_sector_victims(
-        self,
-        level_gen,
-        room,
-        directions,
-        forbidden,
-        lava_positions,
-        door_positions,
-    ):
+    def _place_sector_victims(self, level_gen, room, directions, forbidden):
         """Place victims spread across room sectors, never in front of doors."""
         top_x, top_y = room.top
         size_x, size_y = room.size
@@ -225,13 +166,13 @@ class VictimPlacer(Placer):
             victim = self._make_victim(direction)
             pos = random.choice(pool)
             level_gen.grid.set(pos[0], pos[1], victim)
-            self._assign_health(victim, pos, lava_positions, door_positions)
+            self.configure_victim(level_gen, room, victim, pos)
 
     def place_all(self, level_gen, num_rows, num_cols):
         """Place victims in each room spread across sectors, never in front of doors."""
-        lava_positions, door_positions = self._collect_lava_and_door_positions(
-            level_gen
-        )
+        self.prepare(level_gen)
+
+        door_positions = self._door_positions(level_gen)
 
         # Cells immediately adjacent to any door — victims must not be placed here.
         door_forbidden = {
@@ -242,16 +183,9 @@ class VictimPlacer(Placer):
         for i in range(num_rows):
             for j in range(num_cols):
                 room = level_gen.get_room(i, j)
-                directions = self._make_direction_list(n, room.locked)
+                directions = self.victim_directions(level_gen, room, n)
 
-                self._place_sector_victims(
-                    level_gen,
-                    room,
-                    directions,
-                    door_forbidden,
-                    lava_positions,
-                    door_positions,
-                )
+                self._place_sector_victims(level_gen, room, directions, door_forbidden)
                 self.place_fake_victims(level_gen, i, j, door_forbidden)
 
 

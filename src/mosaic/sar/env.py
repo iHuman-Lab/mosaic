@@ -18,7 +18,6 @@ def build_sar_env(
     num_cols: int = 5,
     num_fake_victims: int = 10,
     num_real_victims: int = 4,
-    important_victim: str = "up",
     lava_per_room: int = 8,
     locked_room_prob: float = 0.35,
     tile_size: int = 64,
@@ -27,11 +26,13 @@ def build_sar_env(
     **kwargs,
 ) -> "PickupVictimEnv":
     """Factory that creates a fully configured PickupVictimEnv (or a subclass,
-    via env_cls — e.g. to override calculate_max_steps() with custom pacing)."""
+    via env_cls — e.g. to override calculate_max_steps() with custom pacing).
+
+    victim_placer_cls is called with num_fake_victims and num_real_victims; bind
+    any further constructor arguments with functools.partial."""
     victim_placer = victim_placer_cls(
         num_fake_victims=num_fake_victims,
         num_real_victims=num_real_victims,
-        important_victim=important_victim,
     )
     env_cls = env_cls or PickupVictimEnv
     return env_cls(
