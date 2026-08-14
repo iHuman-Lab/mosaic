@@ -2,38 +2,28 @@ from ..core.level import SARLevelGen
 from ..core.placers import Placer
 from .actions import BaseAction, RescueAction
 from .instructions import PickupAllVictimsInstr
+from .objects import REAL_VICTIMS
 from .observations import GameObservation, ObservationProcessor
-from .placers import (
-    LavaPlacer,
-    LockedRoomPlacer,
-    VictimPlacer,
-    VictimTracker,
-    VictimTrackerBase,
-)
+from .placers import LavaPlacer, LockedRoomPlacer, VictimPlacer
 
 
 def build_sar_env(
     screen_size: int,
     num_rows: int = 5,
     num_cols: int = 5,
-    num_fake_victims: int = 10,
-    num_real_victims: int = 4,
-    lava_per_room: int = 8,
-    locked_room_prob: float = 0.35,
     tile_size: int = 64,
     victim_placer_cls: type = VictimPlacer,
+    lava_placer_cls: type = LavaPlacer,
+    locked_room_placer_cls: type = LockedRoomPlacer,
     env_cls: type = None,
     **kwargs,
 ) -> "PickupVictimEnv":
     """Factory that creates a fully configured PickupVictimEnv (or a subclass,
     via env_cls — e.g. to override calculate_max_steps() with custom pacing).
 
-    victim_placer_cls is called with num_fake_victims and num_real_victims; bind
-    any further constructor arguments with functools.partial."""
-    victim_placer = victim_placer_cls(
-        num_fake_victims=num_fake_victims,
-        num_real_victims=num_real_victims,
-    )
+    Each *_cls is instantiated with no arguments — class composition, not
+    scalar pass-through: bind constructor arguments with functools.partial,
+    e.g. victim_placer_cls=functools.partial(VictimPlacer, num_real_victims=6)."""
     env_cls = env_cls or PickupVictimEnv
     return env_cls(
         num_rows=num_rows,
@@ -42,9 +32,9 @@ def build_sar_env(
         render_mode="rgb_array",
         agent_pov=True,
         tile_size=tile_size,
-        victim_placer=victim_placer,
-        lava_placer=LavaPlacer(lava_per_room=lava_per_room),
-        locked_room_placer=LockedRoomPlacer(locked_room_prob),
+        victim_placer=victim_placer_cls(),
+        lava_placer=lava_placer_cls(),
+        locked_room_placer=locked_room_placer_cls(),
         **kwargs,
     )
 
@@ -58,7 +48,6 @@ class PickupVictimEnv(SARLevelGen):
         num_dists=18,
         unblocking=False,
         victim_placer: Placer = None,
-        victim_tracker: VictimTrackerBase = None,
         locked_room_placer: Placer = None,
         lava_placer: Placer = None,
         action: BaseAction = None,
@@ -78,7 +67,8 @@ class PickupVictimEnv(SARLevelGen):
             **kwargs,
         )
         self.victim_placer = victim_placer or VictimPlacer()
-        self.victim_tracker = victim_tracker or VictimTracker()
+        self._victims = []  # this episode's real victims; each tracks its own cur_pos
+        self.total_victims = 0
         self.locked_room_placer = locked_room_placer or LockedRoomPlacer()
         self.lava_placer = lava_placer or LavaPlacer()
 
@@ -104,7 +94,7 @@ class PickupVictimEnv(SARLevelGen):
         """
         Returns a list of all victim objects currently present in the environment.
         """
-        return self.victim_tracker.get_victims()
+        return [obj for obj in self._victims if obj.cur_pos is not None]
 
     def get_mission_status(self):
         """
@@ -125,7 +115,7 @@ class PickupVictimEnv(SARLevelGen):
         return {
             "status": status,
             "saved_victims": self.saved_victims,
-            "remaining_victims": self.victim_tracker.total - self.saved_victims,
+            "remaining_victims": self.total_victims - self.saved_victims,
         }
 
     def validate_instrs(self, instrs):
@@ -162,7 +152,8 @@ class PickupVictimEnv(SARLevelGen):
     def calculate_max_steps(self):
         """Compute this episode's max_steps. Override in a subclass for custom
         pacing. Default: None — MiniGrid's own generic max-steps fallback (see
-        RoomGridLevel.reset()) stands unmodified."""
+        RoomGridLevel.reset()) stands unmodified.
+        """
         return None
 
     def reset(self, **kwargs):
@@ -177,15 +168,15 @@ class PickupVictimEnv(SARLevelGen):
             components.reset(self)
 
         self.saved_victims = 0
-        # victim_tracker.reset() is triggered from gen_mission(), called inside
+        # self._victims/total_victims are set from gen_mission(), called inside
         # super().reset() below, once this episode's victims are actually placed.
         # RoomGridLevel.reset() (a MiniGrid base class) already computes its own
-        # generic self.max_steps fallback here if none was fixed at __init__ time.
+        # generic self.max_steps fallback here, and already calls
+        # self.instrs.reset_verifier(self), if none was fixed at __init__ time.
         obs, info = super().reset(**kwargs)
         max_steps = self.calculate_max_steps()
         if max_steps is not None:
             self.max_steps = max_steps
-        self.instrs.reset_verifier(self)
         self.camera.reset()
         obs = self.observation.process_observation(obs, self)
         return obs, info
@@ -250,29 +241,30 @@ class PickupVictimEnv(SARLevelGen):
         # assertion (start_cell is None or can_overlap()) doesn't fail.
         self.grid.set(*self.agent_pos, None)
 
-        # Re-scan now that this episode's victims are placed.
-        self.victim_tracker.reset(self)
-        victims = self.victim_tracker.get_victims()
+        # Re-scan now that this episode's victims are placed. Positions aren't
+        # tracked separately — every victim carries its own cur_pos (set by
+        # put_obj()).
+        self._victims = self.find_objects_by_type(REAL_VICTIMS)
+        self.total_victims = len(self._victims)
 
-        # Create instruction to pick up all victims
-        self.instrs = PickupAllVictimsInstr(victims)
+        # Create instruction to pick up all victims. num_victims is read from
+        # env.total_victims in reset_verifier(), called right after this by
+        # RoomGridLevel.reset() once self.instrs exists.
+        self.instrs = PickupAllVictimsInstr()
 
     def _step(self, action):
+        """Bypass PickupVictimEnv.step() (and any subclass's step() override)
+        and go straight to MiniGrid's own movement/toggle/drop handling. A
+        stable anchor point any subclass's step() override can call — using
+        super().step() directly from a subclass would hit this class's own
+        step() instead, one level up, not MiniGrid's.
+        """
         return super().step(action)
-
-    def show_all_victim_batteries(self, seconds: float = 5.0):
-        self.victim_tracker.show_visible_health(
-            self.camera, self.width, self.height, seconds
-        )
-
-    def hide_all_victim_batteries(self):
-        self.victim_tracker.hide_all_health()
 
     def step(self, action_id):
         if action_id == self.actions.pickup:
             obs, reward, terminated, truncated, info = self.action.execute()
         else:
             obs, reward, terminated, truncated, info = self._step(action_id)
-        self.victim_tracker.tick(self)
         obs = self.observation.process_observation(obs, self)
         return obs, reward, terminated, truncated, info

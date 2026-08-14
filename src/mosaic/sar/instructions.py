@@ -9,18 +9,16 @@ class PickupAllVictimsInstr(Instr):
     This instruction verifies that all victims have been picked up (removed from grid).
     """
 
-    def __init__(self, victims):
-        """
-        Initialize instruction with list of victim objects to pick up.
-
-        Args:
-            victims: List of victim objects that need to be picked up
-        """
-        self.num_victims = len(victims)
-
     def reset_verifier(self, env):
-        """Called on env reset; sets self.env so verify() can access the grid."""
+        """Called on env reset, once this episode's victims are placed; sets
+        self.env so verify() can access the grid, and reads this episode's
+        victim count off env.total_victims for num_navs_needed(). Note:
+        surface() can't rely on this — RoomGridLevel._gen_grid() calls
+        surface() before RoomGridLevel.reset() calls this — so it reads
+        env.total_victims directly instead.
+        """
         self.env = env
+        self.num_victims = env.total_victims
 
     def verify(self, action):
         """
@@ -44,4 +42,4 @@ class PickupAllVictimsInstr(Instr):
         Returns:
             str: Description of the instruction
         """
-        return f"pick up all {self.num_victims} victims"
+        return f"pick up all {env.total_victims} victims"

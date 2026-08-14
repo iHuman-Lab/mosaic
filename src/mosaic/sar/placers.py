@@ -1,44 +1,11 @@
 import random
-from abc import ABC, abstractmethod
 
 from minigrid.core.world_object import Door, Lava
 
 from ..core.placers import Placer
-from .objects import REAL_VICTIMS, FakeVictim, Victim
+from .objects import Victim
 
 _NEIGHBORS_4 = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-_NEIGHBORS_8 = _NEIGHBORS_4 + [(-1, -1), (1, -1), (-1, 1), (1, 1)]
-
-
-def _sector_candidates(level_gen, room, n, excluded):
-    """Yield a list of free candidate cells for each of n sectors in a room's interior.
-
-    Sectors are shuffled before iteration. Because this is a generator, ``excluded``
-    is evaluated lazily — callers can mutate the set between yields and the next
-    sector will respect the updated contents.
-    """
-    top_x, top_y = room.top
-    size_x, size_y = room.size
-    inner_w, inner_h = size_x - 2, size_y - 2
-
-    cols = max(1, round(((inner_w / inner_h) * n) ** 0.5))
-    rows = max(1, (n + cols - 1) // cols)
-    sx, sy = inner_w / cols, inner_h / rows
-
-    sectors = [(c, r) for c in range(cols) for r in range(rows)]
-    random.shuffle(sectors)
-
-    for c, r in sectors[:n]:
-        x0 = top_x + 1 + int(c * sx)
-        x1 = top_x + 1 + (inner_w if c == cols - 1 else int((c + 1) * sx))
-        y0 = top_y + 1 + int(r * sy)
-        y1 = top_y + 1 + (inner_h if r == rows - 1 else int((r + 1) * sy))
-        yield [
-            (x, y)
-            for x in range(x0, x1)
-            for y in range(y0, y1)
-            if level_gen.grid.get(x, y) is None and (x, y) not in excluded
-        ]
 
 
 class LockedRoomPlacer(Placer):
@@ -83,40 +50,19 @@ class LockedRoomPlacer(Placer):
 
 
 class VictimPlacer(Placer):
-    """Handles placement of victims and fake victims.
-
-    Placement only. Subclass and override the three hooks below to give
-    placement study-specific meaning.
+    """Places real victims at random unoccupied cells, never in front of a
+    door. Victims get VictimBase's neutral defaults (health=1.0,
+    deplete_rate=1.0) and a random direction — bare minimum, same shape as
+    LockedRoomPlacer. Everything else victim-related — fake-victim decoys,
+    custom health/decay, targeted placement, spread-out distribution, etc. —
+    doesn't belong here — write a separate Placer in experiment/ instead;
+    see experiment/placers.py.
     """
 
     DIRECTIONS = ["up", "down", "left", "right"]
-    SHIFTS = ["left", "right"]
 
-    def __init__(self, num_fake_victims=3, num_real_victims=1):
-        self.num_fake_victims = num_fake_victims
+    def __init__(self, num_real_victims=1):
         self.num_real_victims = num_real_victims
-
-    def prepare(self, level_gen) -> None:
-        """Per-placement-cycle setup hook, called at the top of place_all() once
-        lava and doors exist. No-op by default."""
-        pass
-
-    def victim_directions(self, level_gen, room, n) -> list:
-        """Return n victim directions for a room. Default: an even split."""
-        per_dir = n // 4
-        dirs = self.DIRECTIONS * per_dir + random.choices(
-            self.DIRECTIONS, k=n - 4 * per_dir
-        )
-        random.shuffle(dirs)
-        return dirs
-
-    def configure_victim(self, level_gen, room, victim, position) -> None:
-        """Adjust a victim just placed at position. No-op by default, leaving
-        VictimBase's health and deplete_rate untouched."""
-        pass
-
-    def _make_victim(self, direction):
-        return Victim(direction, color="red")
 
     def _door_positions(self, level_gen):
         """Single-pass scan for door cells."""
@@ -127,51 +73,19 @@ class VictimPlacer(Placer):
             if isinstance(level_gen.grid.get(x, y), Door)
         ]
 
-    def place_fake_victims(self, level_gen, i, j, forbidden):
-        """Place fake victims in a room, never directly in front of a door."""
-        room = level_gen.get_room(i, j)
+    def _room_candidates(self, level_gen, room, forbidden):
+        """Free, non-forbidden interior cells of a room, read live off the grid."""
         top_x, top_y = room.top
         size_x, size_y = room.size
-        candidates = [
+        return [
             (x, y)
             for y in range(top_y + 1, top_y + size_y - 1)
             for x in range(top_x + 1, top_x + size_x - 1)
             if level_gen.grid.get(x, y) is None and (x, y) not in forbidden
         ]
-        random.shuffle(candidates)
-        for pos in candidates[: self.num_fake_victims]:
-            obj = FakeVictim(
-                random.choice(self.SHIFTS), random.choice(self.DIRECTIONS), color="red"
-            )
-            level_gen.grid.set(pos[0], pos[1], obj)
-
-    def _place_sector_victims(self, level_gen, room, directions, forbidden):
-        """Place victims spread across room sectors, never in front of doors."""
-        top_x, top_y = room.top
-        size_x, size_y = room.size
-        # Pre-compute interior boundary; re-filtered at point of use so stale
-        # entries (cells occupied by previously placed victims) are excluded.
-        interior = [
-            (x, y)
-            for y in range(top_y + 1, top_y + size_y - 1)
-            for x in range(top_x + 1, top_x + size_x - 1)
-            if (x, y) not in forbidden
-        ]
-        for candidates, direction in zip(
-            _sector_candidates(level_gen, room, len(directions), forbidden), directions
-        ):
-            pool = candidates or [p for p in interior if level_gen.grid.get(*p) is None]
-            if not pool:
-                continue  # room is full, skip this victim
-            victim = self._make_victim(direction)
-            pos = random.choice(pool)
-            level_gen.grid.set(pos[0], pos[1], victim)
-            self.configure_victim(level_gen, room, victim, pos)
 
     def place_all(self, level_gen, num_rows, num_cols):
-        """Place victims in each room spread across sectors, never in front of doors."""
-        self.prepare(level_gen)
-
+        """Place victims at random cells in each room, never in front of a door."""
         door_positions = self._door_positions(level_gen)
 
         # Cells immediately adjacent to any door — victims must not be placed here.
@@ -179,128 +93,16 @@ class VictimPlacer(Placer):
             (dx + ox, dy + oy) for dx, dy in door_positions for ox, oy in _NEIGHBORS_4
         }
 
-        n = self.num_real_victims
         for i in range(num_rows):
             for j in range(num_cols):
                 room = level_gen.get_room(i, j)
-                directions = self.victim_directions(level_gen, room, n)
-
-                self._place_sector_victims(level_gen, room, directions, door_forbidden)
-                self.place_fake_victims(level_gen, i, j, door_forbidden)
-
-
-class VictimTrackerBase(ABC):
-    """Abstract base class for tracking this episode's victims.
-
-    Named around health (the value every tracker must manage), not battery
-    (today's specific visual widget for displaying it) — a custom tracker
-    without a battery-style UI still has an obvious health concept to implement.
-    """
-
-    def reset(self, level_gen) -> None:
-        """Re-scan the grid for this episode's victims. Called from gen_mission(),
-        after victim placement, since that's when the grid actually has this
-        episode's victims in it."""
-        self.initialize(level_gen.grid, level_gen.width, level_gen.height)
-
-    def tick(self, level_gen) -> None:
-        """Called once per env.step() for passive per-step effects (e.g. health
-        decay). No-op by default — a tracker with no health concept just never
-        overrides this."""
-        pass
-
-    @abstractmethod
-    def initialize(self, grid, width, height) -> None: ...
-
-    @property
-    @abstractmethod
-    def count(self) -> int: ...
-
-    @property
-    @abstractmethod
-    def total(self) -> int: ...
-
-    @abstractmethod
-    def get_victims(self) -> list: ...
-
-    @abstractmethod
-    def sync_after_pickup(self, grid) -> None: ...
-
-    def show_visible_health(
-        self, camera, grid_width, grid_height, seconds: float = 5.0
-    ) -> None:
-        """Optional: show a visual health indicator for visible victims. No-op by
-        default — only meaningful for trackers that use a health concept."""
-        pass
-
-    def hide_all_health(self) -> None:
-        """Optional: hide the visual health indicator. No-op by default."""
-        pass
-
-    def decay_health(self, camera, grid_width, grid_height, deplete_amount) -> None:
-        """Optional: decay health for visible victims. No-op by default."""
-        pass
-
-
-class VictimTracker(VictimTrackerBase):
-    """Tracks alive victims, handles health decay and battery display."""
-
-    def __init__(self, deplete_amount_fn=None):
-        self._positions = []  # list of (x, y, obj)
-        self._total = 0
-        self.deplete_amount_fn = deplete_amount_fn or (lambda max_steps: 1.0)
-
-    def tick(self, level_gen):
-        amount = self.deplete_amount_fn(level_gen.max_steps)
-        self.decay_health(level_gen.camera, level_gen.width, level_gen.height, amount)
-
-    def initialize(self, grid, width, height):
-        positions = []
-        for y in range(height):
-            for x in range(width):
-                obj = grid.get(x, y)
-                if isinstance(obj, REAL_VICTIMS):
-                    positions.append((x, y, obj))
-        self._positions = positions
-        self._total = len(positions)
-
-    @property
-    def count(self):
-        return len(self._positions)
-
-    @property
-    def total(self):
-        return self._total
-
-    def get_victims(self):
-        return [obj for _, _, obj in self._positions]
-
-    def sync_after_pickup(self, grid):
-        self._positions = [
-            (x, y, obj) for x, y, obj in self._positions if grid.get(x, y) is obj
-        ]
-
-    def _visible(self, camera, grid_width, grid_height):
-        x0, y0, x1, y1 = camera.get_visible_bounds(grid_width, grid_height)
-        return [
-            (x, y, obj)
-            for x, y, obj in self._positions
-            if x0 <= x < x1 and y0 <= y < y1
-        ]
-
-    def show_visible_health(
-        self, camera, grid_width, grid_height, seconds: float = 5.0
-    ):
-        for _, _, obj in self._visible(camera, grid_width, grid_height):
-            obj.show_battery(seconds)
-
-    def hide_all_health(self):
-        for _, _, obj in self._positions:
-            obj.hide_battery()
-
-    def decay_health(self, camera, grid_width, grid_height, deplete_amount):
-        for _, _, obj in self._visible(camera, grid_width, grid_height):
-            obj.deplete(deplete_amount)
+                for _ in range(self.num_real_victims):
+                    candidates = self._room_candidates(level_gen, room, door_forbidden)
+                    if not candidates:
+                        break  # room is full, skip remaining victims
+                    pos = random.choice(candidates)
+                    victim = Victim(random.choice(self.DIRECTIONS), color="red")
+                    level_gen.put_obj(victim, pos[0], pos[1])
 
 
 class LavaPlacer(Placer):
@@ -331,7 +133,7 @@ class LavaPlacer(Placer):
         return 0
 
     def place_in_room(self, level_gen, i, j, num_lava=None):
-        """Place lava tiles spread across room sectors, never adjacent to doors or each other."""
+        """Place lava tiles at random cells in the room, never adjacent to a door."""
         if num_lava is None:
             num_lava = self.lava_per_room
 
@@ -340,12 +142,17 @@ class LavaPlacer(Placer):
         size_x, size_y = room.size
         forbidden = self._door_forbidden_cells(level_gen, top_x, top_y, size_x, size_y)
 
-        for candidates in _sector_candidates(level_gen, room, num_lava, forbidden):
-            if candidates:
-                x, y = random.choice(candidates)
-                level_gen.grid.set(x, y, Lava())
-                for dx, dy in _NEIGHBORS_8:
-                    forbidden.add((x + dx, y + dy))
+        for _ in range(num_lava):
+            candidates = [
+                (x, y)
+                for y in range(top_y + 1, top_y + size_y - 1)
+                for x in range(top_x + 1, top_x + size_x - 1)
+                if level_gen.grid.get(x, y) is None and (x, y) not in forbidden
+            ]
+            if not candidates:
+                break
+            x, y = random.choice(candidates)
+            level_gen.put_obj(Lava(), x, y)
 
     def place_all(self, level_gen, num_rows, num_cols, skip_locked_rooms=False):
         """Place lava in all rooms based on configuration."""

@@ -348,6 +348,7 @@ class TobiiEyeTracker(Sensor):
 
             # Prompt user to accept or redo.
             from psychopy import event as psycho_event
+
             prompt.draw()
             win.flip()
             keys = psycho_event.waitKeys(keyList=["space", "r"])

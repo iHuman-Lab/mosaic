@@ -1,10 +1,11 @@
 """Tests for the split between generic victim placement and study calibration."""
 
+from functools import partial
 from pathlib import Path
 
-from experiment.placers import LavaRiskVictimPlacer
+from experiment.placers import LavaRiskVictimPlacer, SectorSpreadLavaPlacer
 from mosaic.sar.env import PickupVictimEnv, build_sar_env
-from mosaic.sar.objects import REAL_VICTIMS
+from mosaic.sar.objects import REAL_VICTIMS, Victim
 from mosaic.sar.placers import LavaPlacer, VictimPlacer
 
 
@@ -44,7 +45,7 @@ def small_env(**kwargs):
 
 def test_generic_placer_leaves_victimbase_defaults():
     """Asserted before any step(), so this is about placement, not runtime decay."""
-    env = small_env(victim_placer=VictimPlacer(num_fake_victims=2, num_real_victims=4))
+    env = small_env(victim_placer=VictimPlacer(num_real_victims=4))
     env.reset(seed=3)
 
     victims = victims_with_pos(env)
@@ -54,84 +55,14 @@ def test_generic_placer_leaves_victimbase_defaults():
         assert victim.deplete_rate == 1.0
 
 
-def test_generic_placer_spreads_directions():
-    """The default direction list is an even split, not a constant."""
-    placer = VictimPlacer(num_fake_victims=2, num_real_victims=8)
-    dirs = placer.victim_directions(None, None, 8)
-
-    assert len(dirs) == 8
-    assert sorted(dirs) == sorted(VictimPlacer.DIRECTIONS * 2)
-
-
-# --- hooks ------------------------------------------------------------------
-
-
-class RecordingPlacer(VictimPlacer):
-    """Records hook calls so the lifecycle can be asserted."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.prepare_calls = 0
-        self.caches = []
-        self.order = []
-        self.configure_args = []
-
-    def prepare(self, level_gen):
-        self.prepare_calls += 1
-        self.caches.append([])
-        self.order.append("prepare")
-
-    def configure_victim(self, level_gen, room, victim, position):
-        self.order.append("configure")
-        self.configure_args.append((level_gen, room, victim, position))
-
-
-def test_prepare_runs_once_per_placement_cycle():
-    """Once per place_all() — not per room, not per victim."""
-    placer = RecordingPlacer(num_fake_victims=2, num_real_victims=4)
-    env = small_env(victim_placer=placer)
-    env.reset(seed=5)
-
-    assert placer.prepare_calls >= 1
-    assert placer.order[0] == "prepare"
-    assert placer.order.count("configure") > placer.prepare_calls
-
-
-def test_prepare_rebuilds_state_each_cycle():
-    """State is rebuilt per cycle, so it cannot go stale across episodes."""
-    placer = RecordingPlacer(num_fake_victims=2, num_real_victims=4)
-    env = small_env(victim_placer=placer)
-
-    env.reset(seed=7)
-    after_first = placer.prepare_calls
-    env.reset(seed=8)
-
-    assert placer.prepare_calls > after_first
-    assert len({id(cache) for cache in placer.caches}) == placer.prepare_calls
-
-
-def test_configure_victim_receives_live_context():
-    """The hook gets the env, the containing room, and a victim already placed."""
-    placer = RecordingPlacer(num_fake_victims=2, num_real_victims=4)
-    env = small_env(victim_placer=placer)
-    env.reset(seed=9)
-
-    assert placer.configure_args
-    for level_gen, room, victim, position in placer.configure_args:
-        assert level_gen is env
-        assert room is room_of(env, *position)
-        assert isinstance(victim, REAL_VICTIMS)
-
-
 # --- study calibration preserved --------------------------------------------
 
 
 def configured(direction, position, lava, doors):
-    """Run configure_victim in isolation and return (health, deplete_rate)."""
+    """Run _configure_victim in isolation and return (health, deplete_rate)."""
     placer = LavaRiskVictimPlacer()
-    placer._lava, placer._doors = lava, doors
-    victim = placer._make_victim(direction)
-    placer.configure_victim(None, None, victim, position)
+    victim = Victim(direction, color="red")
+    placer._configure_victim(victim, position, lava, doors)
     return victim.health, victim.deplete_rate
 
 
@@ -193,13 +124,13 @@ def test_study_placer_assigns_calibrated_values_end_to_end():
     """Through a real episode, victims carry study values rather than the defaults."""
     env = build_sar_env(
         screen_size=400,
-        victim_placer_cls=LavaRiskVictimPlacer,
+        victim_placer_cls=partial(
+            LavaRiskVictimPlacer, num_real_victims=4, num_fake_victims=2
+        ),
+        lava_placer_cls=partial(LavaPlacer, lava_per_room=2),
         num_rows=2,
         num_cols=2,
         room_size=6,
-        num_real_victims=4,
-        num_fake_victims=2,
-        lava_per_room=2,
     )
     env.reset(seed=13)
 
@@ -218,9 +149,7 @@ def test_study_placer_assigns_calibrated_values_end_to_end():
         assert victim.health in healths
         assert victim.deplete_rate in rates
     # At least one victim differs from the generic default, proving calibration ran.
-    assert any(
-        (v.health, v.deplete_rate) != (1.0, 1.0) for _, _, v in victims
-    )
+    assert any((v.health, v.deplete_rate) != (1.0, 1.0) for _, _, v in victims)
 
 
 # --- injection --------------------------------------------------------------
@@ -237,11 +166,26 @@ def test_build_sar_env_injects_the_placer_class():
     assert isinstance(env.victim_placer, LavaRiskVictimPlacer)
 
 
+def test_build_sar_env_injects_the_lava_placer_class():
+    env = build_sar_env(
+        screen_size=400,
+        lava_placer_cls=SectorSpreadLavaPlacer,
+        num_rows=2,
+        num_cols=2,
+        room_size=6,
+    )
+    assert isinstance(env.lava_placer, SectorSpreadLavaPlacer)
+
+
 def test_game_wires_the_study_placer():
-    """experiment/game.py must inject the study placer.
+    """experiment/game.py must inject the study placers.
 
     Checked as source text because importing it requires the ixp experiment
     runner, which is not a test dependency.
     """
     source = (Path(__file__).parent.parent / "src/experiment/game.py").read_text()
-    assert "victim_placer_cls=LavaRiskVictimPlacer" in source
+    assert "victim_placer_cls=partial(" in source
+    assert "LavaRiskVictimPlacer" in source
+    assert "num_fake_victims=" in source
+    assert "lava_placer_cls=partial(" in source
+    assert "SectorSpreadLavaPlacer" in source

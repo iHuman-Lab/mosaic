@@ -9,10 +9,10 @@ from ixp.individual_difference.vs import VS
 from ixp.surveys.nasa_tlx import NasaTLX
 from ixp.surveys.sart import SART
 
-from experiment.game import SARGame
-from experiment.sensors.eye_tracker.tobii import TobiiEyeTracker
-from experiment.tutorial import SARTutorial
-from utils import skip_run
+from .game import SARGame
+from .sensors.eye_tracker.tobii import TobiiEyeTracker
+from .tutorial import SARTutorial
+from .utils import skip_run
 
 load_dotenv()
 

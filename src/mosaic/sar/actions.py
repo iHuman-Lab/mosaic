@@ -52,6 +52,7 @@ class RescueAction(BaseAction):
 
         if isinstance(obj, REAL_VICTIMS):
             self.env.grid.set(*fwd_pos, None)
+            obj.cur_pos = None
             if obj.health <= 0:
                 reward = self.rewards.real_victim_dead
             else:
@@ -59,12 +60,12 @@ class RescueAction(BaseAction):
                 reward = self.rewards.real_victim_alive
         elif isinstance(obj, FAKE_VICTIMS):
             self.env.grid.set(*fwd_pos, None)
+            obj.cur_pos = None
             reward = self.rewards.fake_victim
         else:
             # fallback to normal pickup
             return self.fallback(self.env.actions.pickup)
 
-        self.env.victim_tracker.sync_after_pickup(self.env.grid)
         terminated, bonus, info = self.verify()
         reward += bonus
 

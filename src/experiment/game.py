@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 import os
+from functools import partial
 from typing import Any
 
 import pygame
 import ujson
 from mosaic.core.camera import AgentFOVCamera
 from mosaic.gui.main import SAREnvGUI
+from mosaic.sar.actions import RescueAction, RescueRewards
 from mosaic.sar.env import build_sar_env
 from ixp.task import Block, LSLTrial, Task
 
-from .placers import LavaRiskVictimPlacer
+from .pacing import TunedPickupVictimEnv
+from .placers import LavaRiskVictimPlacer, SectorSpreadLavaPlacer
 
 
 def _show_break_screen(display: int = 0, recalibrate: bool = False) -> None:
@@ -66,14 +69,26 @@ class SARGameTrial(LSLTrial):
         screen_height = pygame.display.Info().current_h
         env = build_sar_env(
             screen_size=screen_height,
-            num_fake_victims=config.get("num_fake_victims", 12),
-            num_real_victims=config.get("num_real_victims", 6),
-            lava_per_room=config.get("lava_per_room", 8),
             num_rows=config.get("num_rows"),
             num_cols=config.get("num_cols"),
             room_size=config.get("room_size", 14),
-            victim_placer_cls=LavaRiskVictimPlacer,
+            victim_placer_cls=partial(
+                LavaRiskVictimPlacer,
+                num_real_victims=config.get("num_real_victims", 6),
+                num_fake_victims=config.get("num_fake_victims", 12),
+            ),
+            lava_placer_cls=partial(
+                SectorSpreadLavaPlacer,
+                lava_per_room=config.get("lava_per_room", 8),
+            ),
             camera_strategy=AgentFOVCamera(),
+            env_cls=TunedPickupVictimEnv,
+            action=RescueAction(
+                rewards=RescueRewards(
+                    real_victim_alive=10, fake_victim=-10, real_victim_dead=-20
+                )
+            ),
+            deplete_amount_fn=lambda max_steps: 17.5 / max_steps,
         )
         os.environ["SDL_VIDEO_FULLSCREEN_DISPLAY"] = str(config.get("display", 0))
         self.gui = SAREnvGUI(env, config=config)

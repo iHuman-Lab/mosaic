@@ -1,3 +1,5 @@
+from functools import partial
+
 import pygame
 import yaml
 from dotenv import load_dotenv
@@ -5,12 +7,13 @@ from dotenv import load_dotenv
 from mosaic.core.camera import AgentConeCamera
 from mosaic.gui.main import SAREnvGUI
 from mosaic.sar.env import build_sar_env
+from mosaic.sar.placers import LockedRoomPlacer
 
 try:
     from mosaic.tutorial_env import TutorialEnv
 except ImportError:
     pass
-from utils import skip_run
+from .utils import skip_run
 
 load_dotenv()
 
@@ -26,7 +29,7 @@ with skip_run("run", "sar_gui_advanced") as check, check():
         screen_size=800,
         num_rows=3,
         num_cols=3,
-        locked_room_prob=0.5,
+        locked_room_placer_cls=partial(LockedRoomPlacer, locked_room_prob=0.5),
         camera_strategy=AgentConeCamera(),
     )
     env.reset()
