@@ -46,24 +46,26 @@ A comprehensive reference for developers, researchers, and contributors working 
 
 ## Project Structure
 
+`mosaic/` is the installable package (`pyproject.toml`'s `packages.find`) and ships generic,
+neutral defaults — no study-specific tuning. `experiment/` (excluded from packaging) holds this
+lab's calibrated parameters, orchestration, and entry points, wired on top of `mosaic/`'s
+injection points.
+
 ```
 mosaic/
 ├── src/
-│   ├── main.py                  # Entry point: interactive GUI mode
-│   ├── experiment_main.py       # Entry point: full research experiment
-│   ├── replay.py                # Replay recorded sessions
-│   ├── utils.py                 # Utility classes (ColorPrint, skip_run)
 │   └── mosaic/
 │       ├── core/
 │       │   ├── camera.py        # Camera strategy implementations
+│       │   ├── placers.py       # Placer ABC
 │       │   └── level.py         # SARLevelGen base class
 │       ├── sar/
 │       │   ├── env.py           # PickupVictimEnv (main environment)
 │       │   ├── objects.py       # Victim and FakeVictim classes
-│       │   ├── actions.py       # RescueAction with reward logic
+│       │   ├── actions.py       # RescueAction + RescueRewards (neutral defaults)
 │       │   ├── observations.py  # GameObservation processor
 │       │   ├── instructions.py  # PickupAllVictimsInstr mission
-│       │   └── placers.py       # VictimPlacer and LavaPlacer
+│       │   └── placers.py       # VictimPlacer (neutral health), LavaPlacer, LockedRoomPlacer
 │       ├── gui/
 │       │   ├── main.py          # SAREnvGUI controller
 │       │   ├── user.py          # Keyboard input + LLM threading
@@ -76,8 +78,14 @@ mosaic/
 │       │   ├── process_prompts.py  # Prompt generation from game state
 │       │   └── pathfinding.py   # Pathfinding queries for LLM context
 │       └── tutorial_env.py      # Single-room tutorial environment
-├── experiment/
-│   ├── game.py                  # SARGame task with LSL streaming
+├── experiment/                  # excluded from the installable package
+│   ├── main.py                  # Entry point: interactive GUI mode (python -m experiment.main)
+│   ├── experiment_main.py       # Entry point: full research experiment
+│   ├── replay.py                # Replay recorded sessions
+│   ├── utils.py                 # Utility classes (ColorPrint, skip_run)
+│   ├── placers.py               # LavaRiskVictimPlacer — this study's health/decay tuning
+│   ├── pacing.py                # TunedPickupVictimEnv — this study's pacing formula
+│   ├── game.py                  # SARGame task with LSL streaming; wires tuned params into mosaic
 │   ├── tutorial.py              # SARTutorial task
 │   └── instructions.yaml        # Participant-facing instructions
 ├── configs/
@@ -130,10 +138,14 @@ export GOOGLE_API_KEY="..."
 
 ## Running the Game
 
+`experiment/` is excluded from the installable package, so its entry points are run as modules
+(`python -m`) from the repo root, with `src/` on `PYTHONPATH` (e.g. `PYTHONPATH=src`, or run from
+inside `src/`):
+
 ### Interactive Mode (play the game)
 
 ```bash
-python src/main.py
+PYTHONPATH=src python -m experiment.main
 ```
 
 Launches the full Pygame GUI with a 2×2 room grid, real/fake victims, lava, locked rooms, and an optional LLM assistant.
@@ -141,7 +153,7 @@ Launches the full Pygame GUI with a 2×2 room grid, real/fake victims, lava, loc
 ### Experiment Mode (research)
 
 ```bash
-python src/experiment_main.py
+PYTHONPATH=src python -m experiment.experiment_main
 ```
 
 Runs the full experiment protocol: visual search task, multi-object tracking, tutorial, main SAR game, and cognitive surveys. Requires Tobii hardware and the `ixp` package.
@@ -149,7 +161,7 @@ Runs the full experiment protocol: visual search task, multi-object tracking, tu
 ### Replay a Session
 
 ```bash
-python src/replay.py --file <path_to_lsl_recording.json>
+PYTHONPATH=src python -m experiment.replay --file <path_to_lsl_recording.json>
 ```
 
 ---
@@ -536,7 +548,7 @@ game:
 
 ## Experiment Framework
 
-**File:** `src/experiment_main.py`
+**File:** `src/experiment/experiment_main.py`
 
 ### Task Sequence
 
@@ -616,7 +628,7 @@ surveys:                  # NASA-TLX and SART config
 
 ### `configs/config.yml` (base / dev)
 
-Simpler config used when running `src/main.py` directly. Override individual parameters here for quick iteration.
+Simpler config used when running `python -m experiment.main` directly. Override individual parameters here for quick iteration.
 
 ---
 
@@ -645,12 +657,12 @@ pytest tests/test_reachability.py
 
 ## Replay System
 
-**File:** `src/replay.py`
+**File:** `src/experiment/replay.py`
 
 Reads a JSON-encoded LSL recording and replays the session in a Pygame window.
 
 ```bash
-python src/replay.py --file <recording.json>
+PYTHONPATH=src python -m experiment.replay --file <recording.json>
 ```
 
 **Playback controls:**

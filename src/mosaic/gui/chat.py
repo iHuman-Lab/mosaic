@@ -18,6 +18,7 @@ class ChatPanel:
         self.panel_height = panel_height
         self._highlight_until: int = 0
         self.on_blink_end = None
+        self.on_llm_reply = None
 
         s = scale(panel_width, 10, 26)
         self._title_size = scale(s, 3, 14)
@@ -82,8 +83,8 @@ class ChatPanel:
             self._set_bg(_BG_HIGHLIGHT if blink_on else _BG_NORMAL)
 
     def _handle_llm_result(self, user, now: int):
-        if user.provider != "dummy":
-            user.env.show_all_victim_batteries()
+        if user.provider != "dummy" and self.on_llm_reply:
+            self.on_llm_reply()
         kind, value = user.llm_result
         if kind == "reply":
             self.set_message("Agent", value)

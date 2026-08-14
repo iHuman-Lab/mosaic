@@ -51,7 +51,9 @@ class SAREnvGUI:
 
     def _create_panels(self):
         """Create (or recreate) the UI manager and side panels."""
-        self.manager = pygame_gui.UIManager(self.window_size, "src/mosaic/gui/theme.json")
+        self.manager = pygame_gui.UIManager(
+            self.window_size, "src/mosaic/gui/theme.json"
+        )
         chat_height = self.game_size // 2
         info_height = self.game_size - chat_height
         self.info_panel = InfoPanel(
@@ -64,7 +66,14 @@ class SAREnvGUI:
             self.panel_width,
             chat_height,
         )
-        self.chat_panel.on_blink_end = self.user.env.hide_all_victim_batteries
+        # Battery display is optional — only envs that model victim health
+        # (e.g. experiment/pacing.py::TunedPickupVictimEnv) provide these.
+        self.chat_panel.on_llm_reply = getattr(
+            self.user.env, "show_all_victim_batteries", None
+        )
+        self.chat_panel.on_blink_end = getattr(
+            self.user.env, "hide_all_victim_batteries", None
+        )
 
     def _calculate_offsets(self):
         """Calculate scale and offsets to center game content on screen."""

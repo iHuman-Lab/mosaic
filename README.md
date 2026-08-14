@@ -58,9 +58,7 @@ from mosaic.gui.main import SAREnvGUI
 
 # Set up the mission
 victim_placer = VictimPlacer(
-    num_fake_victims=5,    # 5 decoys to fool you
     num_real_victims=3,    # 3 real victims to save
-    important_victim="down"
 )
 
 # Create the environment
@@ -111,16 +109,24 @@ gui.run()
 
 ```
 src/
-├── mosaic/
-│   ├── core/          # 🏗️ Base environment & level generation
-│   ├── gui/           # 🖼️ Pygame GUI components
-│   ├── sar/           # 🚨 SAR-specific logic & objects
-│   └── llm/           # 🧠 LLM-driven agent reasoning
-├── experiment/         # 🧪 Human-subject experiment runner & sensors
-│   └── sensors/        #    LSL-synced sensors (eye tracker, EEG, etc.)
-├── main.py             # 🚀 Entry point
-└── experiment_main.py  # 🧪 Experiment entry point
+├── mosaic/              # 📦 Installable package — generic, reusable defaults
+│   ├── core/            # 🏗️ Base environment & level generation
+│   ├── gui/             # 🖼️ Pygame GUI components
+│   ├── sar/             # 🚨 SAR task mechanics (placement, actions, observations)
+│   └── llm/             # 🧠 LLM-driven agent reasoning
+└── experiment/           # 🧪 This lab's study: tuned parameters, orchestration, sensors
+    ├── sensors/           #    LSL-synced sensors (eye tracker, EEG, etc.)
+    ├── placers.py         #    Study-calibrated victim health/decay tuning
+    ├── pacing.py          #    Study-specific max-steps formula
+    ├── game.py            #    Trial/task orchestration
+    ├── main.py            # 🚀 Dev/demo entry point (python -m experiment.main)
+    └── experiment_main.py # 🧪 Full experiment entry point (python -m experiment.experiment_main)
 ```
+
+`mosaic/` ships generic defaults (neutral rewards, neutral victim health, MiniGrid's own
+max-steps fallback) so `pip install mosaic` alone runs a working SAR episode. `experiment/`
+supplies this lab's exact calibrated values on top, via the constructor injection points
+`mosaic/sar/` exposes — see `REFERENCE.md` for the full list.
 
 ## 🤝 Contributing
 

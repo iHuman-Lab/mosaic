@@ -24,7 +24,9 @@ class CameraStrategy(ABC):
         """Return a cropped view of the grid."""
         pass
 
-    def get_visible_bounds(self, grid_width: int, grid_height: int) -> tuple[int, int, int, int]:
+    def get_visible_bounds(
+        self, grid_width: int, grid_height: int
+    ) -> tuple[int, int, int, int]:
         """Return (x0, y0, x1, y1) tile bounds currently visible. Default: full grid."""
         return 0, 0, grid_width, grid_height
 
@@ -134,7 +136,9 @@ class EdgeFollowCamera(CameraStrategy):
 
         return full_img[py_min:py_max, px_min:px_max, :]
 
-    def get_visible_bounds(self, grid_width: int, grid_height: int) -> tuple[int, int, int, int]:
+    def get_visible_bounds(
+        self, grid_width: int, grid_height: int
+    ) -> tuple[int, int, int, int]:
         view_w, view_h = self.config.view_tiles
         return self.top_x, self.top_y, self.top_x + view_w, self.top_y + view_h
 
@@ -165,9 +169,11 @@ class AgentFOVCamera(CameraStrategy):
 
         rx, ry = room.top
         rw, rh = room.size
-        return full_img[ry * ts:(ry + rh) * ts, rx * ts:(rx + rw) * ts, :]
+        return full_img[ry * ts : (ry + rh) * ts, rx * ts : (rx + rw) * ts, :]
 
-    def get_visible_bounds(self, grid_width: int, grid_height: int) -> tuple[int, int, int, int]:
+    def get_visible_bounds(
+        self, grid_width: int, grid_height: int
+    ) -> tuple[int, int, int, int]:
         if self._last_room is None:
             return 0, 0, grid_width, grid_height
         rx, ry = self._last_room.top
@@ -204,7 +210,17 @@ class AgentConeCamera(AgentFOVCamera):
                     visible[wx, wy] = True
         return visible
 
-    def get_crop(self, grid, agent_pos, agent_dir, room=None, grid_width=None, grid_height=None, env=None, **_) -> np.ndarray:
+    def get_crop(
+        self,
+        grid,
+        agent_pos,
+        agent_dir,
+        room=None,
+        grid_width=None,
+        grid_height=None,
+        env=None,
+        **_,
+    ) -> np.ndarray:
         # Get the room crop from the parent
         crop = super().get_crop(grid, agent_pos, agent_dir, room=room)
 
@@ -219,5 +235,5 @@ class AgentConeCamera(AgentFOVCamera):
         for cy in range(rh):
             for cx in range(rw):
                 if not visible[rx + cx, ry + cy]:
-                    result[cy * ts:(cy + 1) * ts, cx * ts:(cx + 1) * ts] = 0
+                    result[cy * ts : (cy + 1) * ts, cx * ts : (cx + 1) * ts] = 0
         return result
