@@ -1,25 +1,19 @@
-"""Tests for the mosaic.llm.client API: LLMClient contract, built-in clients,
-build_llm_client factory, and the ask() SAR-prompting pipeline.
+"""Tests for the mosaic.llm.client API: the LLMClient contract, the neutral
+DummyLLMClient fallback, and the ask() SAR-prompting pipeline.
 
-All tests use fake/injected clients — no real OpenAI or Google requests.
+mosaic.llm.client knows nothing about providers, model names, or LlamaIndex.
+All tests use fake/injected clients — no real OpenAI or Google requests, and
+no monkeypatching.
 """
 
 import subprocess
 import sys
 import zipfile
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
-from mosaic.llm import client as client_module
-from mosaic.llm.client import (
-    DummyLLMClient,
-    LLMClient,
-    LlamaIndexLLMClient,
-    ask,
-    build_llm_client,
-)
+from mosaic.llm.client import DummyLLMClient, LLMClient, ask
 from mosaic.llm.parser import clean_response
 from mosaic.llm.process_prompts import build_prompt
 
@@ -48,108 +42,40 @@ def _fake_obs(**overrides) -> dict:
     return obs
 
 
-class FakeClient(LLMClient):
+class FakeLLMClient(LLMClient):
     """LLMClient stub that records the prompt it received and returns a
-    canned response."""
+    canned response. Requires no provider or model — the base contract is
+    text-in, text-out only."""
 
-    def __init__(self, response="<START>advice<END>", provider="fake", model="fake-model"):
-        super().__init__(provider=provider, model=model)
+    def __init__(self, response="<START>advice<END>"):
         self.response = response
-        self.received_prompt = None
+        self.prompts = []
 
     def query(self, prompt: str) -> str:
-        self.received_prompt = prompt
+        self.prompts.append(prompt)
         return self.response
 
 
-class _FakeBackend:
-    """Stand-in for a llama_index llm object's .chat() interface."""
-
-    def __init__(self, text="backend reply"):
-        self.text = text
-        self.received_messages = None
-
-    def chat(self, messages):
-        self.received_messages = messages
-        return SimpleNamespace(message=SimpleNamespace(content=self.text))
+class ExplodingLLMClient(LLMClient):
+    def query(self, prompt: str) -> str:
+        raise RuntimeError("boom")
 
 
-# --- build_llm_client --------------------------------------------------
+# --- LLMClient / DummyLLMClient ------------------------------------------
 
 
-def test_build_llm_client_openai_default():
-    client = build_llm_client("openai")
-    assert isinstance(client, LlamaIndexLLMClient)
-    assert client.provider == "openai"
-    assert client.model == "gpt-4o-mini"
-
-
-def test_build_llm_client_google_default_model():
-    client = build_llm_client("google")
-    assert client.provider == "google"
-    assert client.model == "gemini-1.5-flash"
-
-
-def test_build_llm_client_dummy():
-    client = build_llm_client("dummy")
-    assert isinstance(client, DummyLLMClient)
-    assert client.provider == "dummy"
-    assert client.query("anything") == "Currently, no commands are available."
-
-
-def test_build_llm_client_unknown_provider_raises():
-    with pytest.raises(ValueError, match="local"):
-        build_llm_client("local")
-
-
-def test_build_llm_client_construction_is_lazy(monkeypatch):
-    """Constructing a client must not import a provider package, touch the
-    llm_cache, or otherwise contact a backend."""
-    monkeypatch.setitem(sys.modules, "llama_index.llms.openai", None)
-    sys.modules.pop("llama_index.llms.openai", None)
-
-    client_module.llm_cache.clear()
-    build_llm_client("openai")
-
-    assert "llama_index.llms.openai" not in sys.modules
-    assert client_module.llm_cache == {}
-
-
-# --- LLMClient contract / LlamaIndexLLMClient ---------------------------
-
-
-def test_llm_client_query_round_trips_text():
-    fake = FakeClient(response="hello")
+def test_llm_client_is_abstract_and_requires_no_provider_or_model():
+    fake = FakeLLMClient(response="hello")
     assert fake.query("prompt text") == "hello"
-    assert fake.received_prompt == "prompt text"
+    assert fake.prompts == ["prompt text"]
+    assert not hasattr(fake, "provider")
+    assert not hasattr(fake, "model")
 
 
-def test_llama_index_client_uses_get_llm_with_own_provider_and_model(monkeypatch):
-    """build_llm_client("google") must resolve to the Google default model,
-    not silently fall back to the OpenAI default — verified via a
-    monkeypatched get_llm so no real Google package is imported."""
-    calls = []
-
-    def fake_get_llm(model, provider):
-        calls.append((model, provider))
-        return _FakeBackend(text="<START>go north<END>")
-
-    monkeypatch.setattr(client_module, "get_llm", fake_get_llm)
-
-    client = build_llm_client("google")
-    result = client.query("some prompt")
-
-    assert calls == [("gemini-1.5-flash", "google")]
-    assert result == "<START>go north<END>"
-
-
-def test_llama_index_client_raises_on_empty_response(monkeypatch):
-    monkeypatch.setattr(
-        client_module, "get_llm", lambda model, provider: _FakeBackend(text="")
-    )
-    client = build_llm_client("openai")
-    with pytest.raises(ValueError):
-        client.query("prompt")
+def test_dummy_llm_client_returns_fixed_message_with_no_network():
+    client = DummyLLMClient()
+    assert client.query("anything") == "Currently, no commands are available."
+    assert client.query("") == "Currently, no commands are available."
 
 
 # --- ask() ---------------------------------------------------------------
@@ -160,112 +86,117 @@ def test_ask_rejects_non_llmclient():
         ask(_fake_obs(), client=object())
 
 
-def test_ask_rejects_invalid_prompt_type():
+def test_ask_rejects_invalid_prompt_type_with_default_builder():
     with pytest.raises(ValueError, match="prompt_type"):
-        ask(_fake_obs(), client=FakeClient(), prompt_type="medium")
+        ask(_fake_obs(), client=FakeLLMClient(), prompt_type="medium")
 
 
-def test_ask_rejects_invalid_prompt_type_even_in_dummy_mode():
-    with pytest.raises(ValueError, match="prompt_type"):
-        ask(None, provider="dummy", prompt_type="medium")
-
-
-def test_ask_dummy_mode_needs_no_observation_or_network():
-    assert ask(None, provider="dummy") == "Currently, no commands are available."
-    assert ask("garbage", provider="dummy") == "Currently, no commands are available."
-
-
-def test_ask_uses_injected_client_and_builds_expected_prompt():
-    obs = _fake_obs()
-    fake = FakeClient(response="<START>rescue the victim<END>")
-
-    result = ask(obs, client=fake, prompt_type="detailed")
-
-    assert fake.received_prompt == build_prompt(obs, prompt_type="detailed")
-    assert result == clean_response(fake.response)
-
-
-def test_ask_resolves_google_default_model_when_no_model_given(monkeypatch):
-    calls = []
-
-    def fake_get_llm(model, provider):
-        calls.append((model, provider))
-        return _FakeBackend(text="<START>ok<END>")
-
-    monkeypatch.setattr(client_module, "get_llm", fake_get_llm)
-
-    ask(_fake_obs(), provider="google")
-
-    assert calls == [("gemini-1.5-flash", "google")]
-
-
-def test_ask_existing_call_shape_with_explicit_model_still_works(monkeypatch):
-    """The exact call shape used by src/mosaic/gui/user.py today."""
-    calls = []
-
-    def fake_get_llm(model, provider):
-        calls.append((model, provider))
-        return _FakeBackend(text="<START>go east<END>")
-
-    monkeypatch.setattr(client_module, "get_llm", fake_get_llm)
-
-    result = ask(
-        _fake_obs(), model="gpt-4o-mini", provider="openai", prompt_type="sparse"
-    )
-
-    assert calls == [("gpt-4o-mini", "openai")]
-    assert result == "go east"
-
-
-def test_ask_prompt_builder_override_skips_build_prompt(monkeypatch):
-    def boom(*args, **kwargs):
-        raise AssertionError("build_prompt should not be called")
-
-    monkeypatch.setattr(client_module, "build_prompt", boom)
-
-    fake = FakeClient(response="<START>ok<END>")
+def test_ask_skips_prompt_type_validation_when_custom_builder_given():
+    fake = FakeLLMClient(response="<START>ok<END>")
     result = ask(
         _fake_obs(),
         client=fake,
+        prompt_type="medium",
         prompt_builder=lambda obs: "CUSTOM PROMPT",
     )
-
-    assert fake.received_prompt == "CUSTOM PROMPT"
+    assert fake.prompts == ["CUSTOM PROMPT"]
     assert result == "ok"
 
 
-def test_ask_response_processor_override_skips_clean_response(monkeypatch):
-    def boom(*args, **kwargs):
-        raise AssertionError("clean_response should not be called")
+def test_ask_dummy_client_needs_no_real_observation():
+    assert ask(None, client=DummyLLMClient()) == "Currently, no commands are available."
+    assert ask("garbage", client=DummyLLMClient()) == "Currently, no commands are available."
 
-    monkeypatch.setattr(client_module, "clean_response", boom)
 
-    fake = FakeClient(response="<START>raw text<END>")
+def test_ask_dummy_client_response_still_passes_through_response_processor():
+    result = ask(
+        None,
+        client=DummyLLMClient(),
+        response_processor=lambda text: text.upper(),
+    )
+    assert result == "CURRENTLY, NO COMMANDS ARE AVAILABLE."
+
+
+def test_ask_uses_injected_client_and_default_prompt_builder():
+    obs = _fake_obs()
+    fake = FakeLLMClient(response="<START>rescue the victim<END>")
+
+    result = ask(obs, client=fake, prompt_type="detailed")
+
+    assert fake.prompts == [build_prompt(obs, prompt_type="detailed")]
+    assert result == clean_response(fake.response)
+
+
+def test_ask_custom_prompt_builder_bypasses_default_builder():
+    """An obs shape the default build_prompt() cannot handle — if ask() ever
+    fell back to the default builder instead of the injected one, this test
+    fails with a KeyError/AttributeError from build_prompt itself."""
+    obs = {"custom": "value"}
+    fake = FakeLLMClient(response="<START>ok<END>")
+
+    result = ask(
+        obs,
+        client=fake,
+        prompt_builder=lambda o: f"Custom: {o['custom']}",
+    )
+
+    assert fake.prompts == ["Custom: value"]
+    assert result == "ok"
+
+
+def test_ask_custom_response_processor_bypasses_clean_response():
+    fake = FakeLLMClient(response="<START>raw text<END>")
     result = ask(
         _fake_obs(),
         client=fake,
         response_processor=lambda text: text.upper(),
     )
-
     assert result == "<START>RAW TEXT<END>"
 
 
 def test_ask_default_path_unaffected_without_overrides():
     obs = _fake_obs()
-    fake = FakeClient(response="<START>the red key<END>")
+    fake = FakeLLMClient(response="<START>the red key<END>")
 
     result = ask(obs, client=fake, prompt_type="sparse")
 
-    assert fake.received_prompt == build_prompt(obs, prompt_type="sparse")
+    assert fake.prompts == [build_prompt(obs, prompt_type="sparse")]
     assert result == clean_response(fake.response)
+
+
+def test_ask_propagates_client_errors():
+    with pytest.raises(RuntimeError, match="boom"):
+        ask(_fake_obs(), client=ExplodingLLMClient())
+
+
+# --- import isolation -------------------------------------------------------
+
+
+def test_mosaic_llm_client_does_not_import_llama_index():
+    """Run in a subprocess so this is never order-dependent on some other
+    test in the same session having already imported llama_index."""
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import mosaic.llm.client, sys; "
+            "assert not any(m.startswith('llama_index') for m in sys.modules), "
+            "'llama_index was imported by mosaic.llm.client'",
+        ],
+        cwd=str(REPO_ROOT / "src"),
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 # --- packaging -------------------------------------------------------------
 
 
-def test_prompts_yaml_is_included_in_built_wheel(tmp_path):
-    """Build an actual wheel and inspect it — proves the package-data entry
-    works, not just that the pyproject.toml line and source file exist."""
+def test_package_data_is_included_in_built_wheel(tmp_path):
+    """Build an actual wheel and inspect it — proves the package-data
+    entries work, not just that the pyproject.toml lines and source files
+    exist."""
     result = subprocess.run(
         [
             sys.executable,
@@ -289,3 +220,5 @@ def test_prompts_yaml_is_included_in_built_wheel(tmp_path):
     with zipfile.ZipFile(wheels[0]) as zf:
         names = zf.namelist()
     assert "mosaic/llm/prompts.yaml" in names
+    assert "mosaic/gui/theme.json" in names
+    assert "mosaic/gui/compass_inv.png" in names

@@ -7,6 +7,7 @@ import pygame
 from ixp.task import Task
 
 from mosaic.gui.main import SAREnvGUI
+from mosaic.llm.client import DummyLLMClient
 from mosaic.tutorial_env import TutorialEnv
 
 
@@ -32,7 +33,7 @@ class SARTutorial(Task):
             agent_pov=True,
         )
         os.environ["SDL_VIDEO_FULLSCREEN_DISPLAY"] = str(self.config.get("display", 0))
-        self.gui = SAREnvGUI(env, config=self.config)
+        self.gui = SAREnvGUI(env, config=self.config, llm_client=DummyLLMClient())
 
         def _show_mission():
             mission = getattr(self.gui.user.env, "mission", None)

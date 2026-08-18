@@ -12,6 +12,7 @@ from mosaic.sar.actions import RescueAction, RescueRewards
 from mosaic.sar.env import build_sar_env
 from ixp.task import Block, LSLTrial, Task
 
+from .llm import build_llm_client
 from .pacing import TunedPickupVictimEnv
 from .placers import LavaRiskVictimPlacer, SectorSpreadLavaPlacer
 
@@ -91,7 +92,14 @@ class SARGameTrial(LSLTrial):
             deplete_amount_fn=lambda max_steps: 17.5 / max_steps,
         )
         os.environ["SDL_VIDEO_FULLSCREEN_DISPLAY"] = str(config.get("display", 0))
-        self.gui = SAREnvGUI(env, config=config)
+        provider = config.get("provider", "openai")
+        llm_client = build_llm_client(provider=provider, model=config.get("model"))
+        self.gui = SAREnvGUI(env, config=config, llm_client=llm_client)
+        if provider != "dummy":
+            reveal = getattr(env, "show_all_victim_batteries", None)
+            hide = getattr(env, "hide_all_victim_batteries", None)
+            if reveal and hide:
+                self.gui.set_advice_callbacks(on_reply=reveal, on_end=hide)
         self.gui.reset()
         self.gui.running = True
         self.gui.user.total_steps = 0
@@ -110,8 +118,8 @@ class SARGameTrial(LSLTrial):
             "terminated": user.terminated,
             "truncated": user.truncated,
             "prompt_type": user.prompt_type,
-            "llm_model": user.model,
-            "llm_provider": user.provider,
+            "llm_model": self.parameters.get("model"),
+            "llm_provider": self.parameters.get("provider", "dummy"),
             "llm_response": user.last_llm_response,
             "total_steps": user.total_steps,
             "trial_id": self.trial_id,
@@ -180,7 +188,7 @@ class SARGame(Task):
                     **config,
                     "prompt_type": "sparse",
                     "provider": "dummy",
-                    "model": google_model,
+                    "model": "dummy",
                 },
             ),
             order=2,

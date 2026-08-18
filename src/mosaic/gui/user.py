@@ -1,26 +1,34 @@
+import copy
 import threading
 import time
+from typing import Optional
 
 from minigrid.core.actions import Actions
 from minigrid.manual_control import ManualControl
 
-from ..llm.client import ask
+from ..llm.client import DummyLLMClient, LLMClient, ask
 
 
 class User(ManualControl):
     def __init__(
         self,
         env,
+        llm_client: Optional[LLMClient] = None,
         prompt_type: str = "detailed",
-        model: str = "gpt-4o-mini",
-        provider: str = "openai",
+        prompt_builder=None,
+        response_processor=None,
         max_time: float = 5.0,
     ):
         self.env = env
         self.obs = None
+        if llm_client is None:
+            llm_client = DummyLLMClient()
+        if not isinstance(llm_client, LLMClient):
+            raise TypeError("llm_client must be an LLMClient")
+        self.llm_client = llm_client
         self.prompt_type = prompt_type
-        self.model = model
-        self.provider = provider
+        self.prompt_builder = prompt_builder
+        self.response_processor = response_processor
         self.max_time = max_time * 60  # convert minutes to seconds
         self.last_llm_response: str | None = None
         self.total_steps = 0
@@ -94,6 +102,15 @@ class User(ManualControl):
         if self.on_reset:
             self.on_reset()
 
+    def _ask(self, obs):
+        return ask(
+            obs,
+            client=self.llm_client,
+            prompt_type=self.prompt_type,
+            prompt_builder=self.prompt_builder,
+            response_processor=self.response_processor,
+        )
+
     def ask_llm(self) -> str:
         """Ask the LLM for tactical advice based on the current game state."""
 
@@ -101,12 +118,7 @@ class User(ManualControl):
             self.last_llm_response = "No observation available yet."
             return self.last_llm_response
 
-        self.last_llm_response = ask(
-            self.obs,
-            model=self.model,
-            provider=self.provider,
-            prompt_type=self.prompt_type,
-        )
+        self.last_llm_response = self._ask(self.obs)
         self.steps_since_last_llm = 0
         return self.last_llm_response
 
@@ -116,17 +128,12 @@ class User(ManualControl):
             self.llm_result = ("reply", "No observation available yet.")
             return
 
-        obs_snapshot = self.obs
+        obs_snapshot = copy.deepcopy(self.obs)
         self.llm_result = None
 
         def _run():
             try:
-                result = ask(
-                    obs_snapshot,
-                    model=self.model,
-                    provider=self.provider,
-                    prompt_type=self.prompt_type,
-                )
+                result = self._ask(obs_snapshot)
                 self.llm_result = ("reply", result)
             except Exception as e:
                 self.llm_result = ("error", str(e))

@@ -17,9 +17,11 @@ dependencies = [
     "numpy",
     "pandas",
     "pyyaml",
-    "llama_index",
     "python-dotenv",
 ]
+
+[project.optional-dependencies]
+experiment = ["llama_index"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -27,3 +29,4 @@ exclude = ["experiment", "experiment.*"]
 
 [tool.setuptools.package-data]
 "mosaic.llm" = ["prompts.yaml"]
+"mosaic.gui" = ["theme.json", "compass_inv.png"]

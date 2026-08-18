@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Optional
+
 import numpy as np
 import pygame
 import pygame_gui
@@ -6,17 +9,38 @@ from .chat import ChatPanel
 from .info import InfoPanel
 from .user import User
 
-pygame.init()
+_THEME_PATH = str(Path(__file__).parent / "theme.json")
+
+
+def _ensure_pygame_init():
+    if not pygame.get_init():
+        pygame.init()
 
 
 class SAREnvGUI:
-    def __init__(self, env, config: dict | None = None):
-        config = config or {}
-        self.user = User(
+    user_class = User
+    info_panel_class = InfoPanel
+    chat_panel_class = ChatPanel
+
+    def __init__(
+        self,
+        env,
+        config: Optional[dict] = None,
+        llm_client=None,
+        prompt_builder=None,
+        response_processor=None,
+    ):
+        _ensure_pygame_init()
+        if config is None:
+            config = {}
+        self._on_advice_reply = None
+        self._on_advice_end = None
+        self.user = self.user_class(
             env,
+            llm_client=llm_client,
             prompt_type=config.get("prompt_type", "detailed"),
-            model=config.get("model", "gpt-4o-mini"),
-            provider=config.get("provider", "openai"),
+            prompt_builder=prompt_builder,
+            response_processor=response_processor,
             max_time=config.get("max_time", 5.0),
         )
         self.llm_nudge_interval = config.get("llm_nudge_interval", 50)
@@ -51,29 +75,30 @@ class SAREnvGUI:
 
     def _create_panels(self):
         """Create (or recreate) the UI manager and side panels."""
-        self.manager = pygame_gui.UIManager(
-            self.window_size, "src/mosaic/gui/theme.json"
-        )
+        self.manager = pygame_gui.UIManager(self.window_size, _THEME_PATH)
         chat_height = self.game_size // 2
         info_height = self.game_size - chat_height
-        self.info_panel = InfoPanel(
+        self.info_panel = self.info_panel_class(
             self.manager, self.game_size, self.panel_width, info_height
         )
-        self.chat_panel = ChatPanel(
+        self.chat_panel = self.chat_panel_class(
             self.manager,
             self.game_size,
             info_height,
             self.panel_width,
             chat_height,
         )
-        # Battery display is optional — only envs that model victim health
-        # (e.g. experiment/pacing.py::TunedPickupVictimEnv) provide these.
-        self.chat_panel.on_llm_reply = getattr(
-            self.user.env, "show_all_victim_batteries", None
-        )
-        self.chat_panel.on_blink_end = getattr(
-            self.user.env, "hide_all_victim_batteries", None
-        )
+        self.chat_panel.on_llm_reply = self._on_advice_reply
+        self.chat_panel.on_blink_end = self._on_advice_end
+
+    def set_advice_callbacks(self, on_reply=None, on_end=None):
+        """Configure study-specific behavior (e.g. battery reveal) to run on
+        advice reply/blink-end. Reapplied automatically whenever panels are
+        recreated (e.g. on fullscreen toggle)."""
+        self._on_advice_reply = on_reply
+        self._on_advice_end = on_end
+        self.chat_panel.on_llm_reply = on_reply
+        self.chat_panel.on_blink_end = on_end
 
     def _calculate_offsets(self):
         """Calculate scale and offsets to center game content on screen."""
