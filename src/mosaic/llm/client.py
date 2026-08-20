@@ -1,44 +1,64 @@
-from llama_index.core.llms import ChatMessage, MessageRole
+from abc import ABC, abstractmethod
+from typing import Callable, Optional
 
 from .parser import clean_response
 from .process_prompts import build_prompt
 
-llm_cache: dict = {}
+
+class LLMClient(ABC):
+    """Text-in, text-out contract for talking to an LLM backend.
+
+    Deliberately knows nothing about SAR observations, prompts, GUI panels,
+    game actions, or experiment conditions — and nothing about providers or
+    model names, since those aren't universal properties of an LLM client.
+    """
+
+    @abstractmethod
+    def query(self, prompt: str) -> str:
+        """Send a text prompt and return text."""
 
 
-def get_llm(model: str, provider: str):
-    key = (provider, model)
-    if key not in llm_cache:
-        if provider == "openai":
-            from llama_index.llms.openai import OpenAI
+class DummyLLMClient(LLMClient):
+    """No-LLM fallback — returns a neutral message, no network."""
 
-            llm_cache[key] = OpenAI(model=model)
-        elif provider == "google":
-            from llama_index.llms.google_genai import GoogleGenAI
-
-            llm_cache[key] = GoogleGenAI(model=model)
-        else:
-            raise ValueError(
-                f"Unknown provider: {provider!r}. Use 'openai' or 'google'."
-            )
-    return llm_cache[key]
+    def query(self, prompt: str) -> str:
+        return "Currently, no commands are available."
 
 
 def ask(
     obs: dict,
-    model: str = "gpt-4o-mini",
-    provider: str = "openai",
+    client: LLMClient,
     prompt_type: str = "sparse",
+    prompt_builder: Optional[Callable[[dict], str]] = None,
+    response_processor: Optional[Callable[[str], str]] = None,
 ) -> str:
-    if provider == "dummy":
-        return "Currently, no commands are available."
-    llm = get_llm(model, provider)
-    prompt = build_prompt(obs, prompt_type=prompt_type)
-    # Gemini requires at least one USER message; SYSTEM-only crashes with pop from empty list.
-    # Sending prompt as USER works universally across providers.
-    messages = [
-        ChatMessage(role=MessageRole.USER, content=prompt),
-    ]
-    response = llm.chat(messages)
-    raw = response.message.content
-    return clean_response(raw)
+    if not isinstance(client, LLMClient):
+        raise TypeError("client must be an LLMClient")
+    if prompt_builder is None and prompt_type not in ("sparse", "detailed"):
+        raise ValueError(
+            f"Unknown prompt_type {prompt_type!r}. Expected 'sparse' or 'detailed'."
+        )
+
+    if prompt_builder is None:
+        build = lambda observation: build_prompt(observation, prompt_type=prompt_type)
+    else:
+        build = prompt_builder
+
+    process = response_processor if response_processor is not None else clean_response
+
+    if isinstance(client, DummyLLMClient):
+        raw_response = client.query("")
+    else:
+        prompt = build(obs)
+        if not isinstance(prompt, str):
+            raise TypeError("prompt_builder must return a string")
+        raw_response = client.query(prompt)
+
+    if not isinstance(raw_response, str):
+        raise TypeError("LLMClient.query() must return a string")
+
+    response = process(raw_response)
+    if not isinstance(response, str):
+        raise TypeError("response_processor must return a string")
+
+    return response

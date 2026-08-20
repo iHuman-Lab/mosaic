@@ -83,10 +83,10 @@ class ChatPanel:
             self._set_bg(_BG_HIGHLIGHT if blink_on else _BG_NORMAL)
 
     def _handle_llm_result(self, user, now: int):
-        if user.provider != "dummy" and self.on_llm_reply:
-            self.on_llm_reply()
         kind, value = user.llm_result
         if kind == "reply":
+            if self.on_llm_reply:
+                self.on_llm_reply()
             self.set_message("Agent", value)
             self._highlight_until = now + _HIGHLIGHT_DURATION_MS
         else:
