@@ -18,10 +18,6 @@ def _ensure_pygame_init():
 
 
 class SAREnvGUI:
-    user_class = User
-    info_panel_class = InfoPanel
-    chat_panel_class = ChatPanel
-
     def __init__(
         self,
         env,
@@ -29,10 +25,16 @@ class SAREnvGUI:
         llm_client=None,
         prompt_builder=None,
         response_processor=None,
+        user_class=None,
+        info_panel_class=None,
+        chat_panel_class=None,
     ):
         _ensure_pygame_init()
         if config is None:
             config = {}
+        self.user_class = User if user_class is None else user_class
+        self.info_panel_class = InfoPanel if info_panel_class is None else info_panel_class
+        self.chat_panel_class = ChatPanel if chat_panel_class is None else chat_panel_class
         self._on_advice_reply = None
         self._on_advice_end = None
         self.user = self.user_class(

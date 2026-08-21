@@ -5,13 +5,22 @@ through fakes and real (injected) collaborators.
 """
 
 import os
+import subprocess
+import sys
 import threading
+from pathlib import Path
+from types import SimpleNamespace
 
+import pygame
 import pytest
+from minigrid.core.actions import Actions
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
 from mosaic.gui.chat import ChatPanel
+from mosaic.gui.info import InfoPanel
 from mosaic.gui.main import SAREnvGUI
 from mosaic.gui.user import User
 from mosaic.llm.client import DummyLLMClient, LLMClient
@@ -152,6 +161,96 @@ def test_sar_env_gui_set_advice_callbacks_applies_immediately_and_survives_recre
     assert gui.chat_panel.on_llm_reply is not None
     gui.chat_panel.on_llm_reply()
     assert calls == ["reply"]
+
+
+class _RecordingUser(User):
+    instantiated = False
+
+    def __init__(self, *args, **kwargs):
+        type(self).instantiated = True
+        super().__init__(*args, **kwargs)
+
+
+class _RecordingInfoPanel(InfoPanel):
+    instantiated = False
+
+    def __init__(self, *args, **kwargs):
+        type(self).instantiated = True
+        super().__init__(*args, **kwargs)
+
+
+class _RecordingChatPanel(ChatPanel):
+    instantiated = False
+
+    def __init__(self, *args, **kwargs):
+        type(self).instantiated = True
+        super().__init__(*args, **kwargs)
+
+
+def test_sar_env_gui_uses_injected_component_classes():
+    gui = SAREnvGUI(
+        _make_env(),
+        llm_client=FakeLLMClient(),
+        user_class=_RecordingUser,
+        info_panel_class=_RecordingInfoPanel,
+        chat_panel_class=_RecordingChatPanel,
+    )
+
+    assert isinstance(gui.user, _RecordingUser)
+    assert isinstance(gui.info_panel, _RecordingInfoPanel)
+    assert isinstance(gui.chat_panel, _RecordingChatPanel)
+    assert _RecordingUser.instantiated
+    assert _RecordingInfoPanel.instantiated
+    assert _RecordingChatPanel.instantiated
+
+    # Injected classes must survive panel recreation (what toggle_fullscreen()
+    # triggers), since that's the whole reason they're stored on the instance.
+    gui._create_panels()
+    assert type(gui.info_panel) is _RecordingInfoPanel
+    assert type(gui.chat_panel) is _RecordingChatPanel
+
+
+def test_sar_env_gui_default_component_classes_when_not_injected():
+    gui = SAREnvGUI(_make_env(), llm_client=FakeLLMClient())
+
+    assert type(gui.user) is User
+    assert type(gui.info_panel) is InfoPanel
+    assert type(gui.chat_panel) is ChatPanel
+
+
+def test_gui_handle_user_input_steps_the_environment():
+    """Exercises the real SAREnvGUI -> User -> env.step() path a key press
+    takes, not just User.handle_key() in isolation."""
+    gui = SAREnvGUI(_make_env(), llm_client=FakeLLMClient())
+    try:
+        gui.reset()
+        initial_steps = gui.user.total_steps
+
+        gui.handle_user_input(SimpleNamespace(type=pygame.KEYDOWN, key=pygame.K_UP))
+
+        assert gui.user.total_steps == initial_steps + 1
+        assert gui.user.last_action == Actions.forward
+    finally:
+        gui.close()
+
+
+def test_importing_mosaic_gui_does_not_initialize_pygame():
+    """Run in a subprocess so this can't be order-dependent on some other
+    test in the same session having already called pygame.init()."""
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import pygame, mosaic.gui.main; "
+            "assert not pygame.get_init(); "
+            "assert not pygame.display.get_init(); "
+            "assert pygame.display.get_surface() is None",
+        ],
+        cwd=str(REPO_ROOT / "src"),
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 # --- ChatPanel ---------------------------------------------------------
