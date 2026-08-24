@@ -20,11 +20,14 @@ os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 from mosaic.gui.chat import ChatPanel
+from mosaic.gui.feedback import EdgeVignette
 from mosaic.gui.info import InfoPanel
 from mosaic.gui.main import SAREnvGUI
 from mosaic.gui.user import User
 from mosaic.llm.client import DummyLLMClient, LLMClient
 from mosaic.sar.env import PickupVictimEnv
+from mosaic.sar.objects import Victim
+from mosaic.sar.placers import VictimPlacer
 
 
 def _make_env():
@@ -129,6 +132,75 @@ def test_user_ask_llm_no_observation_yet():
     assert user.ask_llm() == "No observation available yet."
 
 
+def _single_victim_env():
+    """A 2x2 env with exactly one manually-placed real victim directly in
+    front of the agent, for deterministic rescue+mission_complete testing."""
+    env = PickupVictimEnv(
+        room_size=6,
+        num_rows=2,
+        num_cols=2,
+        num_dists=4,
+        victim_placer=VictimPlacer(num_real_victims=0),
+        render_mode="rgb_array",
+    )
+    env.reset(seed=1)
+    env.max_steps = 100  # see tests/test_actions.py::_reset for why
+    room = next(
+        env.get_room(i, j)
+        for i in range(env.num_rows)
+        for j in range(env.num_cols)
+        if not getattr(env.get_room(i, j), "locked", False)
+    )
+    top_x, top_y = room.top
+    agent_pos = (top_x + 1, top_y + 1)
+    env.grid.set(*agent_pos, None)
+    env.agent_pos = agent_pos
+    env.agent_dir = 0  # facing right (+x)
+    env.put_obj(Victim("up", color="red"), top_x + 2, top_y + 1)
+    env._victims = env.find_objects_by_type((Victim,))
+    env.total_victims = len(env._victims)
+    return env
+
+
+def test_user_step_sets_last_info_from_env():
+    user = User(_make_env(), llm_client=FakeLLMClient())
+    user.reset()
+
+    user.step(Actions.left)
+
+    assert user.last_info == {"events": []}
+
+
+def test_user_reset_clears_last_info():
+    user = User(_make_env(), llm_client=FakeLLMClient())
+    user.reset()
+    user.step(Actions.left)
+    assert user.last_info != {}
+
+    user.reset()
+
+    assert user.last_info == {}
+
+
+def test_user_on_step_fires_with_mission_complete_before_terminal_reset_clears_last_info():
+    """User.step() auto-resets on terminated=True, which would otherwise
+    silently wipe last_info before the GUI ever sees a mission_complete
+    event. on_step must fire with the real info first."""
+    # Not user.reset() — the env is already carefully hand-placed, and
+    # reset() would re-randomize it via env.reset(). step() only needs
+    # total_reward to exist first (normally set by reset()).
+    user = User(_single_victim_env(), llm_client=FakeLLMClient())
+    user.total_reward = 0.0
+    captured = []
+    user.on_step = lambda info: captured.append(info)
+
+    user.step(Actions.pickup)
+
+    assert len(captured) == 1
+    assert any(e["type"] == "mission_complete" for e in captured[0]["events"])
+    assert user.last_info == {}
+
+
 # --- SAREnvGUI ---------------------------------------------------------
 
 
@@ -187,6 +259,14 @@ class _RecordingChatPanel(ChatPanel):
         super().__init__(*args, **kwargs)
 
 
+class _RecordingEdgeVignette(EdgeVignette):
+    instantiated = False
+
+    def __init__(self, *args, **kwargs):
+        type(self).instantiated = True
+        super().__init__(*args, **kwargs)
+
+
 def test_sar_env_gui_uses_injected_component_classes():
     gui = SAREnvGUI(
         _make_env(),
@@ -194,14 +274,17 @@ def test_sar_env_gui_uses_injected_component_classes():
         user_class=_RecordingUser,
         info_panel_class=_RecordingInfoPanel,
         chat_panel_class=_RecordingChatPanel,
+        vignette_class=_RecordingEdgeVignette,
     )
 
     assert isinstance(gui.user, _RecordingUser)
     assert isinstance(gui.info_panel, _RecordingInfoPanel)
     assert isinstance(gui.chat_panel, _RecordingChatPanel)
+    assert isinstance(gui.vignette, _RecordingEdgeVignette)
     assert _RecordingUser.instantiated
     assert _RecordingInfoPanel.instantiated
     assert _RecordingChatPanel.instantiated
+    assert _RecordingEdgeVignette.instantiated
 
     # Injected classes must survive panel recreation (what toggle_fullscreen()
     # triggers), since that's the whole reason they're stored on the instance.
@@ -216,6 +299,30 @@ def test_sar_env_gui_default_component_classes_when_not_injected():
     assert type(gui.user) is User
     assert type(gui.info_panel) is InfoPanel
     assert type(gui.chat_panel) is ChatPanel
+    assert type(gui.vignette) is EdgeVignette
+
+
+def test_sar_env_gui_vignette_survives_create_panels_unlike_side_panels():
+    """Unlike info_panel/chat_panel, the vignette has no pygame_gui/UIManager
+    dependency and game_size never changes after construction, so it must
+    not be torn down/rebuilt when _create_panels() runs (e.g. on fullscreen
+    toggle) — an in-flight animation should survive it."""
+    gui = SAREnvGUI(_make_env(), llm_client=FakeLLMClient())
+    original_vignette = gui.vignette
+
+    gui._create_panels()
+
+    assert gui.vignette is original_vignette
+
+
+def test_sar_env_gui_wires_user_on_step_to_vignette_trigger():
+    gui = SAREnvGUI(_make_env(), llm_client=FakeLLMClient())
+    triggered = []
+    gui.vignette.trigger = lambda events: triggered.append(events)
+
+    gui.user.on_step({"events": [{"type": "victim_rescued", "reward": 1.0}]})
+
+    assert triggered == [[{"type": "victim_rescued", "reward": 1.0}]]
 
 
 def test_gui_handle_user_input_steps_the_environment():

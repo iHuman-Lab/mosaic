@@ -6,6 +6,7 @@ import pygame
 import pygame_gui
 
 from .chat import ChatPanel
+from .feedback import EdgeVignette
 from .info import InfoPanel
 from .user import User
 
@@ -28,6 +29,7 @@ class SAREnvGUI:
         user_class=None,
         info_panel_class=None,
         chat_panel_class=None,
+        vignette_class=None,
     ):
         _ensure_pygame_init()
         if config is None:
@@ -35,6 +37,7 @@ class SAREnvGUI:
         self.user_class = User if user_class is None else user_class
         self.info_panel_class = InfoPanel if info_panel_class is None else info_panel_class
         self.chat_panel_class = ChatPanel if chat_panel_class is None else chat_panel_class
+        self.vignette_class = EdgeVignette if vignette_class is None else vignette_class
         self._on_advice_reply = None
         self._on_advice_end = None
         self.user = self.user_class(
@@ -51,6 +54,15 @@ class SAREnvGUI:
 
         self.panel_width = self.game_size // 2
         self.window_size = (self.game_size + self.panel_width, self.game_size)
+
+        # Not recreated in _create_panels()/toggle_fullscreen(): unlike the
+        # panels, it has no pygame_gui/UIManager dependency, and game_size
+        # never changes after construction — so there's nothing to rebuild,
+        # and an in-flight vignette survives a fullscreen toggle instead of
+        # being reset.
+        self.vignette = self.vignette_class(self.game_size)
+        self._viewport_rect = pygame.Rect(0, 0, self.game_size, self.game_size)
+        self.user.on_step = lambda info: self.vignette.trigger(info.get("events", []))
 
         self.window = env.window
 
@@ -127,6 +139,7 @@ class SAREnvGUI:
             game_surface, (self.game_size, self.game_size)
         )
         surface.blit(game_surface, (0, 0))
+        self.vignette.render(surface, self._viewport_rect)
         self.info_panel.render(self.user.obs or {}, self.user.env, self.user)
         time_delta = self.clock.tick(30) / 1000.0
         self.manager.update(time_delta)

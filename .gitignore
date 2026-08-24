@@ -6,3 +6,4 @@ results/
 *.egg-info/
 .pytest_cache/
 build/
+local/

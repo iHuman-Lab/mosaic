@@ -49,25 +49,35 @@ class RescueAction(BaseAction):
         fwd_pos = self.env.front_pos
         obj = self.env.grid.get(*fwd_pos)
         reward = 0
+        events = []
 
         if isinstance(obj, REAL_VICTIMS):
             self.env.grid.set(*fwd_pos, None)
             obj.cur_pos = None
             if obj.health <= 0:
                 reward = self.rewards.real_victim_dead
+                events.append({"type": "dead_victim_picked", "reward": reward})
             else:
                 self.env.saved_victims += 1
                 reward = self.rewards.real_victim_alive
+                events.append({"type": "victim_rescued", "reward": reward})
         elif isinstance(obj, FAKE_VICTIMS):
             self.env.grid.set(*fwd_pos, None)
             obj.cur_pos = None
             reward = self.rewards.fake_victim
+            events.append({"type": "wrong_victim", "reward": reward})
         else:
             # fallback to normal pickup
             return self.fallback(self.env.actions.pickup)
 
         terminated, bonus, info = self.verify()
         reward += bonus
+        # PickupAllVictimsInstr.verify() only ever succeeds once the grid has
+        # zero real victims left, and only this branch removes one — so a
+        # non-pickup action can never be the one to trigger mission_complete.
+        if info.get("mission_complete"):
+            events.append({"type": "mission_complete", "reward": bonus})
+        info["events"] = events
 
         obs = self.env.gen_obs()
         return obs, reward, terminated, False, info

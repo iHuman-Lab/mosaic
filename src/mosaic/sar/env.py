@@ -267,4 +267,5 @@ class PickupVictimEnv(SARLevelGen):
         else:
             obs, reward, terminated, truncated, info = self._step(action_id)
         obs = self.observation.process_observation(obs, self)
+        info.setdefault("events", [])
         return obs, reward, terminated, truncated, info

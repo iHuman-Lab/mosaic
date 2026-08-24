@@ -27,6 +27,8 @@ class TunedPickupVictimEnv(PickupVictimEnv):
         else:
             obs, reward, terminated, truncated, info = self._step(action_id)
 
+        info.setdefault("events", [])
+
         amount = self.deplete_amount_fn(self.max_steps)
         x0, y0, x1, y1 = self.camera.get_visible_bounds(self.width, self.height)
         for obj in self._victims:
@@ -34,7 +36,10 @@ class TunedPickupVictimEnv(PickupVictimEnv):
                 continue  # picked up
             x, y = obj.cur_pos
             if x0 <= x < x1 and y0 <= y < y1:
+                was_alive = obj.health > 0
                 obj.deplete(amount)
+                if was_alive and obj.health <= 0:
+                    info["events"].append({"type": "victim_died", "reward": 0.0})
 
         obs = self.observation.process_observation(obs, self)
         return obs, reward, terminated, truncated, info
