@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from functools import partial
 from typing import Any
 
 import pygame
@@ -73,13 +72,11 @@ class SARGameTrial(LSLTrial):
             num_rows=config.get("num_rows"),
             num_cols=config.get("num_cols"),
             room_size=config.get("room_size", 14),
-            victim_placer_cls=partial(
-                LavaRiskVictimPlacer,
+            victim_placer=LavaRiskVictimPlacer(
                 num_real_victims=config.get("num_real_victims", 6),
                 num_fake_victims=config.get("num_fake_victims", 12),
             ),
-            lava_placer_cls=partial(
-                SectorSpreadLavaPlacer,
+            lava_placer=SectorSpreadLavaPlacer(
                 lava_per_room=config.get("lava_per_room", 8),
             ),
             camera_strategy=AgentFOVCamera(),

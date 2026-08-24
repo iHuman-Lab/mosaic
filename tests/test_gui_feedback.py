@@ -196,7 +196,9 @@ def test_render_mid_animation_is_edge_strong_center_faint_and_translucent():
 
     assert corner_alpha > center_alpha
     assert 0 < center_alpha
-    assert center_alpha < corner_alpha * 0.15  # faint (~center_strength), well below peak
+    assert (
+        center_alpha < corner_alpha * 0.15
+    )  # faint (~center_strength), well below peak
     assert 0 < corner_alpha < 255
     pygame.quit()
 
@@ -246,7 +248,9 @@ def test_edge_vignette_center_strength_param_changes_rendered_center_alpha():
 def test_styles_override_replaces_an_existing_events_color():
     pygame.init()
     clock = _FakeClock()
-    custom = {"victim_rescued": VignetteStyle((0, 0, 255), 140, 0.4, "fade", priority=3)}
+    custom = {
+        "victim_rescued": VignetteStyle((0, 0, 255), 140, 0.4, "fade", priority=3)
+    }
     vignette = EdgeVignette(size=64, clock_ms=clock, styles=custom)
     surface = pygame.Surface((64, 64), pygame.SRCALPHA)
     rect = pygame.Rect(0, 0, 64, 64)
@@ -286,7 +290,9 @@ def test_new_event_type_can_control_its_own_priority():
     list, where a tie would favor it."""
     pygame.init()
     clock = _FakeClock()
-    custom = {"critical_alert": VignetteStyle((255, 255, 0), 200, 0.5, "fade", priority=-1)}
+    custom = {
+        "critical_alert": VignetteStyle((255, 255, 0), 200, 0.5, "fade", priority=-1)
+    }
     vignette = EdgeVignette(size=64, clock_ms=clock, styles=custom)
     surface = pygame.Surface((64, 64), pygame.SRCALPHA)
     rect = pygame.Rect(0, 0, 64, 64)
@@ -296,7 +302,11 @@ def test_new_event_type_can_control_its_own_priority():
     vignette.render(surface, rect)
 
     rgb = pygame.surfarray.array3d(surface)
-    assert tuple(rgb[0, 32]) == (255, 255, 0)  # critical_alert's color won, not dead_victim_picked's
+    assert tuple(rgb[0, 32]) == (
+        255,
+        255,
+        0,
+    )  # critical_alert's color won, not dead_victim_picked's
     pygame.quit()
 
 
@@ -319,7 +329,12 @@ def test_default_styles_merge_leaves_unlisted_events_unchanged():
     vignette = EdgeVignette(
         size=64,
         clock_ms=_FakeClock(),
-        styles={"victim_rescued": VignetteStyle((0, 0, 255), 140, 0.4, "fade", priority=3)},
+        styles={
+            "victim_rescued": VignetteStyle((0, 0, 255), 140, 0.4, "fade", priority=3)
+        },
     )
-    assert vignette._styles["mission_complete"] == DEFAULT_VIGNETTE_STYLES["mission_complete"]
+    assert (
+        vignette._styles["mission_complete"]
+        == DEFAULT_VIGNETTE_STYLES["mission_complete"]
+    )
     assert vignette._styles["victim_rescued"].color == (0, 0, 255)

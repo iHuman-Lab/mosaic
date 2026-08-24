@@ -26,21 +26,17 @@ class SAREnvGUI:
         llm_client=None,
         prompt_builder=None,
         response_processor=None,
-        user_class=None,
-        info_panel_class=None,
-        chat_panel_class=None,
-        vignette_class=None,
+        user=None,
+        info_panel=None,
+        chat_panel=None,
+        vignette=None,
     ):
         _ensure_pygame_init()
         if config is None:
             config = {}
-        self.user_class = User if user_class is None else user_class
-        self.info_panel_class = InfoPanel if info_panel_class is None else info_panel_class
-        self.chat_panel_class = ChatPanel if chat_panel_class is None else chat_panel_class
-        self.vignette_class = EdgeVignette if vignette_class is None else vignette_class
         self._on_advice_reply = None
         self._on_advice_end = None
-        self.user = self.user_class(
+        self.user = user or User(
             env,
             llm_client=llm_client,
             prompt_type=config.get("prompt_type", "detailed"),
@@ -55,14 +51,25 @@ class SAREnvGUI:
         self.panel_width = self.game_size // 2
         self.window_size = (self.game_size + self.panel_width, self.game_size)
 
-        # Not recreated in _create_panels()/toggle_fullscreen(): unlike the
-        # panels, it has no pygame_gui/UIManager dependency, and game_size
-        # never changes after construction — so there's nothing to rebuild,
-        # and an in-flight vignette survives a fullscreen toggle instead of
-        # being reset.
-        self.vignette = self.vignette_class(self.game_size)
+        # None of user/vignette/info_panel/chat_panel are ever replaced after
+        # construction — a fullscreen toggle only rebinds info_panel/chat_panel
+        # to a fresh UIManager via attach() (see _create_panels()), it doesn't
+        # recreate the objects. So an in-flight vignette, and any external
+        # references to these instances, survive a toggle untouched.
+        self.vignette = vignette or EdgeVignette(self.game_size)
         self._viewport_rect = pygame.Rect(0, 0, self.game_size, self.game_size)
         self.user.on_step = lambda info: self.vignette.trigger(info.get("events", []))
+
+        chat_height = self.game_size // 2
+        info_height = self.game_size - chat_height
+        self.info_panel = info_panel or InfoPanel(
+            self.game_size, self.panel_width, info_height
+        )
+        self.chat_panel = chat_panel or ChatPanel(
+            self.game_size, info_height, self.panel_width, chat_height
+        )
+        self.chat_panel.on_llm_reply = self._on_advice_reply
+        self.chat_panel.on_blink_end = self._on_advice_end
 
         self.window = env.window
 
@@ -88,27 +95,20 @@ class SAREnvGUI:
             self.screen_size = self.window_size
 
     def _create_panels(self):
-        """Create (or recreate) the UI manager and side panels."""
+        """Build a fresh UI manager and rebind info_panel/chat_panel to it.
+
+        Called at startup and on every fullscreen toggle — pygame_gui panels
+        must attach to a manager built for the window's current display mode,
+        but info_panel/chat_panel themselves are the same instances for the
+        life of the GUI (see __init__)."""
         self.manager = pygame_gui.UIManager(self.window_size, _THEME_PATH)
-        chat_height = self.game_size // 2
-        info_height = self.game_size - chat_height
-        self.info_panel = self.info_panel_class(
-            self.manager, self.game_size, self.panel_width, info_height
-        )
-        self.chat_panel = self.chat_panel_class(
-            self.manager,
-            self.game_size,
-            info_height,
-            self.panel_width,
-            chat_height,
-        )
-        self.chat_panel.on_llm_reply = self._on_advice_reply
-        self.chat_panel.on_blink_end = self._on_advice_end
+        self.info_panel.attach(self.manager)
+        self.chat_panel.attach(self.manager)
 
     def set_advice_callbacks(self, on_reply=None, on_end=None):
         """Configure study-specific behavior (e.g. battery reveal) to run on
-        advice reply/blink-end. Reapplied automatically whenever panels are
-        recreated (e.g. on fullscreen toggle)."""
+        advice reply/blink-end. chat_panel is a single instance for the life
+        of the GUI, so this persists automatically across fullscreen toggles."""
         self._on_advice_reply = on_reply
         self._on_advice_end = on_end
         self.chat_panel.on_llm_reply = on_reply

@@ -244,19 +244,19 @@ class _RecordingUser(User):
 
 
 class _RecordingInfoPanel(InfoPanel):
-    instantiated = False
+    attached_count = 0
 
-    def __init__(self, *args, **kwargs):
-        type(self).instantiated = True
-        super().__init__(*args, **kwargs)
+    def attach(self, manager):
+        type(self).attached_count += 1
+        super().attach(manager)
 
 
 class _RecordingChatPanel(ChatPanel):
-    instantiated = False
+    attached_count = 0
 
-    def __init__(self, *args, **kwargs):
-        type(self).instantiated = True
-        super().__init__(*args, **kwargs)
+    def attach(self, manager):
+        type(self).attached_count += 1
+        super().attach(manager)
 
 
 class _RecordingEdgeVignette(EdgeVignette):
@@ -267,33 +267,44 @@ class _RecordingEdgeVignette(EdgeVignette):
         super().__init__(*args, **kwargs)
 
 
-def test_sar_env_gui_uses_injected_component_classes():
-    gui = SAREnvGUI(
-        _make_env(),
-        llm_client=FakeLLMClient(),
-        user_class=_RecordingUser,
-        info_panel_class=_RecordingInfoPanel,
-        chat_panel_class=_RecordingChatPanel,
-        vignette_class=_RecordingEdgeVignette,
+def test_sar_env_gui_uses_injected_component_instances():
+    env = _make_env()
+    injected_user = _RecordingUser(env, llm_client=FakeLLMClient())
+    injected_vignette = _RecordingEdgeVignette(env.screen_size)
+    injected_info_panel = _RecordingInfoPanel(env.screen_size, env.screen_size // 2)
+    injected_chat_panel = _RecordingChatPanel(
+        env.screen_size, 0, env.screen_size // 2, env.screen_size
     )
 
-    assert isinstance(gui.user, _RecordingUser)
-    assert isinstance(gui.info_panel, _RecordingInfoPanel)
-    assert isinstance(gui.chat_panel, _RecordingChatPanel)
-    assert isinstance(gui.vignette, _RecordingEdgeVignette)
+    gui = SAREnvGUI(
+        env,
+        llm_client=FakeLLMClient(),
+        user=injected_user,
+        info_panel=injected_info_panel,
+        chat_panel=injected_chat_panel,
+        vignette=injected_vignette,
+    )
+
+    assert gui.user is injected_user
+    assert gui.info_panel is injected_info_panel
+    assert gui.chat_panel is injected_chat_panel
+    assert gui.vignette is injected_vignette
     assert _RecordingUser.instantiated
-    assert _RecordingInfoPanel.instantiated
-    assert _RecordingChatPanel.instantiated
     assert _RecordingEdgeVignette.instantiated
+    assert _RecordingInfoPanel.attached_count == 1
+    assert _RecordingChatPanel.attached_count == 1
 
-    # Injected classes must survive panel recreation (what toggle_fullscreen()
-    # triggers), since that's the whole reason they're stored on the instance.
+    # info_panel/chat_panel are the same instances across panel recreation
+    # (what toggle_fullscreen() triggers) — only their pygame_gui widget tree
+    # is rebuilt, via a second attach() call to the fresh manager.
     gui._create_panels()
-    assert type(gui.info_panel) is _RecordingInfoPanel
-    assert type(gui.chat_panel) is _RecordingChatPanel
+    assert gui.info_panel is injected_info_panel
+    assert gui.chat_panel is injected_chat_panel
+    assert _RecordingInfoPanel.attached_count == 2
+    assert _RecordingChatPanel.attached_count == 2
 
 
-def test_sar_env_gui_default_component_classes_when_not_injected():
+def test_sar_env_gui_defaults_when_not_injected():
     gui = SAREnvGUI(_make_env(), llm_client=FakeLLMClient())
 
     assert type(gui.user) is User
@@ -302,17 +313,21 @@ def test_sar_env_gui_default_component_classes_when_not_injected():
     assert type(gui.vignette) is EdgeVignette
 
 
-def test_sar_env_gui_vignette_survives_create_panels_unlike_side_panels():
-    """Unlike info_panel/chat_panel, the vignette has no pygame_gui/UIManager
-    dependency and game_size never changes after construction, so it must
-    not be torn down/rebuilt when _create_panels() runs (e.g. on fullscreen
-    toggle) — an in-flight animation should survive it."""
+def test_sar_env_gui_components_survive_create_panels():
+    """user/vignette/info_panel/chat_panel are all built once and never
+    replaced — a fullscreen toggle only rebuilds pygame_gui widgets via
+    attach(), it never swaps in new objects. An in-flight vignette animation,
+    and any external references to these instances, survive it."""
     gui = SAREnvGUI(_make_env(), llm_client=FakeLLMClient())
     original_vignette = gui.vignette
+    original_info_panel = gui.info_panel
+    original_chat_panel = gui.chat_panel
 
     gui._create_panels()
 
     assert gui.vignette is original_vignette
+    assert gui.info_panel is original_info_panel
+    assert gui.chat_panel is original_chat_panel
 
 
 def test_sar_env_gui_wires_user_on_step_to_vignette_trigger():
@@ -367,7 +382,8 @@ def _panel_and_manager():
     import pygame_gui
 
     manager = pygame_gui.UIManager((400, 400))
-    panel = ChatPanel(manager, 0, 0, 200, 400)
+    panel = ChatPanel(0, 0, 200, 400)
+    panel.attach(manager)
     return panel
 
 

@@ -23,7 +23,7 @@ class VignetteStyle:
 DEFAULT_VIGNETTE_STYLES: Dict[str, VignetteStyle] = {
     "victim_rescued": VignetteStyle((50, 205, 50), 140, 0.4, "fade", priority=3),
     "mission_complete": VignetteStyle((50, 205, 50), 150, 1.2, "fade", priority=2),
-    "wrong_victim": VignetteStyle((220, 20, 60), 165, 0.6, "fade", priority=1),
+    "wrong_victim": VignetteStyle((200, 0, 0), 165, 0.6, "fade", priority=1),
     "dead_victim_picked": VignetteStyle((139, 0, 0), 185, 0.9, "fade", priority=0),
     "victim_died": VignetteStyle((139, 0, 0), 185, 0.9, "pulse", priority=0),
 }

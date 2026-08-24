@@ -9,32 +9,34 @@ from .placers import LavaPlacer, LockedRoomPlacer, VictimPlacer
 
 def build_sar_env(
     screen_size: int,
+    room_size=14,
     num_rows: int = 5,
     num_cols: int = 5,
     tile_size: int = 64,
-    victim_placer_cls: type = VictimPlacer,
-    lava_placer_cls: type = LavaPlacer,
-    locked_room_placer_cls: type = LockedRoomPlacer,
-    env_cls: type = None,
+    victim_placer: Placer = None,
+    lava_placer: Placer = None,
+    locked_room_placer: Placer = None,
+    env_cls=None,
     **kwargs,
 ) -> "PickupVictimEnv":
     """Factory that creates a fully configured PickupVictimEnv (or a subclass,
     via env_cls — e.g. to override calculate_max_steps() with custom pacing).
 
-    Each *_cls is instantiated with no arguments — class composition, not
-    scalar pass-through: bind constructor arguments with functools.partial,
-    e.g. victim_placer_cls=functools.partial(VictimPlacer, num_real_victims=6)."""
+    Each placer is passed as an already-constructed instance — configure it
+    yourself (e.g. VictimPlacer(num_real_victims=6)) before passing it in.
+    Defaults to each placer's base class, unconfigured, when omitted."""
     env_cls = env_cls or PickupVictimEnv
     return env_cls(
+        room_size=room_size,
         num_rows=num_rows,
         num_cols=num_cols,
         screen_size=screen_size,
         render_mode="rgb_array",
         agent_pov=True,
         tile_size=tile_size,
-        victim_placer=victim_placer_cls(),
-        lava_placer=lava_placer_cls(),
-        locked_room_placer=locked_room_placer_cls(),
+        victim_placer=victim_placer or VictimPlacer(),
+        lava_placer=lava_placer or LavaPlacer(),
+        locked_room_placer=locked_room_placer or LockedRoomPlacer(),
         **kwargs,
     )
 
@@ -154,7 +156,7 @@ class PickupVictimEnv(SARLevelGen):
         pacing. Default: None — MiniGrid's own generic max-steps fallback (see
         RoomGridLevel.reset()) stands unmodified.
         """
-        return None
+        return
 
     def reset(self, **kwargs):
         """Reset the environment and all stats."""
