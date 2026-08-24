@@ -1,10 +1,8 @@
-from functools import partial
-
 import pygame
 import yaml
 from dotenv import load_dotenv
 
-from mosaic.core.camera import AgentConeCamera
+from mosaic.core.camera import AgentFOVCamera
 from mosaic.gui.main import SAREnvGUI
 from mosaic.llm.client import DummyLLMClient
 from mosaic.sar.env import build_sar_env
@@ -15,6 +13,7 @@ try:
 except ImportError:
     pass
 from .llm import build_llm_client
+from .placers import LavaRiskVictimPlacer, SectorSpreadLavaPlacer
 from .utils import skip_run
 
 load_dotenv()
@@ -26,13 +25,23 @@ with open(config_path, "r") as file:
     config = yaml.safe_load(file)
 
 
+game_config = config.get("game", {})
+
 with skip_run("run", "sar_gui_advanced") as check, check():
     env = build_sar_env(
         screen_size=800,
         num_rows=3,
         num_cols=3,
-        locked_room_placer_cls=partial(LockedRoomPlacer, locked_room_prob=0.5),
-        camera_strategy=AgentConeCamera(),
+        room_size=10,
+        victim_placer=LavaRiskVictimPlacer(
+            num_real_victims=game_config.get("num_real_victims", 6),
+            num_fake_victims=game_config.get("num_fake_victims", 12),
+        ),
+        lava_placer=SectorSpreadLavaPlacer(
+            lava_per_room=game_config.get("lava_per_room", 8),
+        ),
+        locked_room_placer=LockedRoomPlacer(locked_room_prob=0.5),
+        camera_strategy=AgentFOVCamera(),
     )
     env.reset()
     llm_client = build_llm_client(

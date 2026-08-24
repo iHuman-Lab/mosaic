@@ -28,16 +28,41 @@ def _reward_color(value: float) -> str:
 
 
 class InfoPanel:
-    """Info panel — UIPanel + mission box + 3 metric columns + compass + controls."""
+    """Info panel — UIPanel + mission box + 3 metric columns + compass + controls.
 
-    def __init__(self, manager, x_offset, panel_width, panel_height=None):
-        panel_height = panel_height if panel_height is not None else panel_width
+    Construction only stores configuration; call attach(manager) to build the
+    pygame_gui widget tree. attach() may be called again to rebind this same
+    instance to a fresh manager (SAREnvGUI does this on every fullscreen
+    toggle, since its UIManager is rebuilt against the new display mode)."""
+
+    def __init__(self, x_offset, panel_width, panel_height=None):
+        self.x_offset = x_offset
+        self.panel_width = panel_width
+        self.panel_height = panel_height if panel_height is not None else panel_width
 
         s = scale(panel_width, 10, 26)
         self._metric_size = s
         self._title_size = scale(s, 3, 14)
         self._label_size = max(10, s // 3)
         self._body_size = max(10, s // 2)
+
+        self.manager = None
+        self.panel = None
+        self.title_box = None
+        self.info_box = None
+        self.reward_box = None
+        self.total_box = None
+        self.time_box = None
+        self.compass_image = None
+
+    def attach(self, manager):
+        """(Re)build the widget tree, bound to `manager`."""
+        self.manager = manager
+        x_offset, panel_width, panel_height = (
+            self.x_offset,
+            self.panel_width,
+            self.panel_height,
+        )
 
         PAD = 10
         W = panel_width - PAD * 2

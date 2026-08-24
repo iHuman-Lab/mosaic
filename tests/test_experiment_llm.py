@@ -57,6 +57,7 @@ def test_build_llm_client_explicit_model_overrides_default():
 
 
 def test_llama_index_client_queries_injected_backend_directly():
+    pytest.importorskip("llama_index")
     backend = _FakeBackend(text="<START>go north<END>")
     client = LlamaIndexLLMClient(provider="google", model="gemini-1.5-flash", llm=backend)
 
@@ -70,6 +71,7 @@ def test_llama_index_client_queries_injected_backend_directly():
 
 
 def test_llama_index_client_raises_on_empty_response():
+    pytest.importorskip("llama_index")
     client = LlamaIndexLLMClient(
         provider="openai", model="test-model", llm=_FakeBackend(text="")
     )

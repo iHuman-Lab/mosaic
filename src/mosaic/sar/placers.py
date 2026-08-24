@@ -59,10 +59,9 @@ class VictimPlacer(Placer):
     see experiment/placers.py.
     """
 
-    DIRECTIONS = ["up", "down", "left", "right"]
-
     def __init__(self, num_real_victims=1):
         self.num_real_victims = num_real_victims
+        self.DIRECTIONS = ["up", "down", "left", "right"]
 
     def _door_positions(self, level_gen):
         """Single-pass scan for door cells."""

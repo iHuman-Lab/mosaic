@@ -34,6 +34,8 @@ class User(ManualControl):
         self.total_steps = 0
         self.episode_ended = False
         self.on_reset = None
+        self.on_step = None
+        self.last_info: dict = {}
         self.steps_since_last_llm = 0
         self._start_time: float | None = None
         self.llm_thread: threading.Thread | None = None
@@ -56,6 +58,9 @@ class User(ManualControl):
         self.truncated = bool(truncated)
         self.total_steps += 1
         self.steps_since_last_llm += 1
+        self.last_info = info
+        if self.on_step:
+            self.on_step(info)
         if terminated:
             self.episode_ended = True
             self.reset()
@@ -99,6 +104,7 @@ class User(ManualControl):
         self.truncated = False
         self._start_time = None
         self.obs = obs
+        self.last_info = {}
         if self.on_reset:
             self.on_reset()
 

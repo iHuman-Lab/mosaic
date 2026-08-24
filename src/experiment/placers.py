@@ -79,21 +79,20 @@ class LavaRiskVictimPlacer(VictimPlacer):
     rather than relying on hooks into the base class.
     """
 
-    SHIFTS = ["left", "right"]
-
-    # Depletion rate by facing-relative-to-lava x distance tier.
-    _DEPLETE_RATES = {
-        "toward": {"near": 3.25, "medium": 2.2, "safe": 0.75, "door": 0.25},
-        "perp": {"near": 2.5, "medium": 1.0, "safe": 0.5, "door": 0.1},
-        "away": {"near": 1.5, "medium": 0.75, "safe": 0.25, "door": 0.05},
-    }
-    # Starting health by facing.
-    _STARTING_HEALTH = {"up": 0.90, "left": 0.75, "right": 0.75, "down": 0.60}
-
     def __init__(self, *args, important_victim="up", num_fake_victims=3, **kwargs):
         super().__init__(*args, **kwargs)
         self.important_victim = important_victim
         self.num_fake_victims = num_fake_victims
+        self.SHIFTS = ["left", "right"]
+
+        # Depletion rate by facing-relative-to-lava x distance tier.
+        self.DEPLETE_RATES = {
+            "toward": {"near": 3.25, "medium": 2.2, "safe": 0.75, "door": 0.25},
+            "perp": {"near": 2.5, "medium": 1.0, "safe": 0.5, "door": 0.1},
+            "away": {"near": 1.5, "medium": 0.75, "safe": 0.25, "door": 0.05},
+        }
+        # Starting health by facing.
+        self.STARTING_HEALTH = {"up": 0.90, "left": 0.75, "right": 0.75, "down": 0.60}
 
     def place_fake_victims(self, level_gen, i, j, forbidden):
         """Place fake victims in a room, never directly in front of a door."""
@@ -142,8 +141,8 @@ class LavaRiskVictimPlacer(VictimPlacer):
         tier = self._lava_tier(d_lava, d_door)
         orientation = self._lava_orientation(direction, nearest_lava, position)
 
-        victim.deplete_rate = self._DEPLETE_RATES[orientation][tier]
-        victim.health = self._STARTING_HEALTH.get(direction, 0.90)
+        victim.deplete_rate = self.DEPLETE_RATES[orientation][tier]
+        victim.health = self.STARTING_HEALTH.get(direction, 0.90)
 
     def _lava_tier(self, d_lava, d_door):
         """Classify distance into a deplete-rate tier."""

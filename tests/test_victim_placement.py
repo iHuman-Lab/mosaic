@@ -1,6 +1,5 @@
 """Tests for the split between generic victim placement and study calibration."""
 
-from functools import partial
 from pathlib import Path
 
 from experiment.placers import LavaRiskVictimPlacer, SectorSpreadLavaPlacer
@@ -124,10 +123,8 @@ def test_study_placer_assigns_calibrated_values_end_to_end():
     """Through a real episode, victims carry study values rather than the defaults."""
     env = build_sar_env(
         screen_size=400,
-        victim_placer_cls=partial(
-            LavaRiskVictimPlacer, num_real_victims=4, num_fake_victims=2
-        ),
-        lava_placer_cls=partial(LavaPlacer, lava_per_room=2),
+        victim_placer=LavaRiskVictimPlacer(num_real_victims=4, num_fake_victims=2),
+        lava_placer=LavaPlacer(lava_per_room=2),
         num_rows=2,
         num_cols=2,
         room_size=6,
@@ -155,26 +152,28 @@ def test_study_placer_assigns_calibrated_values_end_to_end():
 # --- injection --------------------------------------------------------------
 
 
-def test_build_sar_env_injects_the_placer_class():
+def test_build_sar_env_injects_the_placer_instance():
+    victim_placer = LavaRiskVictimPlacer()
     env = build_sar_env(
         screen_size=400,
-        victim_placer_cls=LavaRiskVictimPlacer,
+        victim_placer=victim_placer,
         num_rows=2,
         num_cols=2,
         room_size=6,
     )
-    assert isinstance(env.victim_placer, LavaRiskVictimPlacer)
+    assert env.victim_placer is victim_placer
 
 
-def test_build_sar_env_injects_the_lava_placer_class():
+def test_build_sar_env_injects_the_lava_placer_instance():
+    lava_placer = SectorSpreadLavaPlacer()
     env = build_sar_env(
         screen_size=400,
-        lava_placer_cls=SectorSpreadLavaPlacer,
+        lava_placer=lava_placer,
         num_rows=2,
         num_cols=2,
         room_size=6,
     )
-    assert isinstance(env.lava_placer, SectorSpreadLavaPlacer)
+    assert env.lava_placer is lava_placer
 
 
 def test_game_wires_the_study_placer():
@@ -184,8 +183,6 @@ def test_game_wires_the_study_placer():
     runner, which is not a test dependency.
     """
     source = (Path(__file__).parent.parent / "src/experiment/game.py").read_text()
-    assert "victim_placer_cls=partial(" in source
-    assert "LavaRiskVictimPlacer" in source
+    assert "victim_placer=LavaRiskVictimPlacer(" in source
     assert "num_fake_victims=" in source
-    assert "lava_placer_cls=partial(" in source
-    assert "SectorSpreadLavaPlacer" in source
+    assert "lava_placer=SectorSpreadLavaPlacer(" in source
