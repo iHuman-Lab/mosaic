@@ -6,16 +6,23 @@ edit_uri: edit/main/docs/
 
 theme:
   name: material
+  logo: assets/images/logo.png
+  favicon: assets/images/logo.png
+  font:
+    text: Rubik
+    code: Roboto Mono
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
+      primary: black
+      accent: deep orange
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
+      primary: black
+      accent: deep orange
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
@@ -39,6 +46,9 @@ nav:
   - Configuration: configuration.md
   - Testing: testing.md
   - API Reference: api.md
+
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
   - admonition
