@@ -3,13 +3,8 @@
 Test script to verify lava is placed in approximately 50% of rooms.
 """
 
-import sys
-from pathlib import Path
-
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from src.game.sar.env import PickupVictimEnv
+from mosaic.sar.env import PickupVictimEnv
+from mosaic.sar.placers import LavaPlacer
 
 
 def count_lava_tiles(env):
@@ -54,8 +49,7 @@ def main():
         room_size=6,
         num_rows=num_rows,
         num_cols=num_cols,
-        add_lava=True,  # Default is now True
-        lava_probability=0.5,  # Default is now 0.5
+        lava_placer=LavaPlacer(lava_probability=0.5),
         render_mode=None,
     )
 

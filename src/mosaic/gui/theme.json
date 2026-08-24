@@ -1,0 +1,80 @@
+{
+    "panel": {
+        "colours": {
+            "dark_bg": "#1E1E28",
+            "normal_bg": "#1E1E28",
+            "normal_border": "#3C3C46"
+        },
+        "misc": {
+            "border_width": "2",
+            "shape_corner_radius": "2",
+            "text_horiz_alignment": "center"
+        }
+    },
+    "label": {
+        "colours": {
+            "normal_text": "#DCDCDC",
+            "dark_bg": "#1E1E28"
+        },
+        "misc": {
+            "text_horiz_alignment": "left",
+            "text_vert_alignment": "center"
+        }
+    },
+    "#title": {
+        "colours": {
+            "normal_text": "#FFFFFF"
+        },
+        "misc": {
+            "text_horiz_alignment": "center",
+            "border_width": "0"
+        }
+    },
+    "#section_header": {
+        "colours": {
+            "normal_text": "#FFFFFF"
+        },
+        "misc": {
+            "text_horiz_alignment": "center"
+        }
+    },
+    "#info_text": {
+        "colours": {
+            "normal_text": "#6495ED"
+        },
+        "misc": {
+            "text_horiz_alignment": "center"
+        }
+    },
+    "#control_text": {},
+    "#compass_box": {
+        "misc": {
+            "text_vert_alignment": "center",
+            "line_spacing": "1.0"
+        }
+    },
+    "#info_box": {
+        "colours": {
+            "dark_bg": "#1E1E28",
+            "normal_text": "#DCDCDC"
+        },
+        "misc": {
+            "border_width": "0",
+            "line_spacing": "1.5"
+        }
+    },
+    "text_box": {
+        "colours": {
+            "dark_bg": "#1E1E28",
+            "normal_text": "#DCDCDC"
+        },
+        "font": {
+            "name": "Arial",
+            "size": 34
+        },
+        "misc": {
+            "line_spacing": "1.25",
+            "text_horiz_alignment": "left"
+        }
+    }
+}

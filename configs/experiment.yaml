@@ -1,43 +1,59 @@
+display: &display 0
+fullscreen: &fullscreen true
+
 game:
-  display: 1 # Display/monitor index (0 = primary, 1 = secondary, etc.)
-  fullscreen: True # Run the game and instruction windows in fullscreen
+  display: *display
+  fullscreen: *fullscreen
+  max_time: 15 # minutes
+  min_steps_percent: 50
+  prompt_type: sparse
+  openai_model: gpt-5-mini-2025-08-07
+  google_model: gemini-2.5-flash
+  num_rows: 5
+  num_cols: 5
+  room_size: 6
+  num_fake_victims: 12
+  num_real_victims: 12
+  lava_per_room: 8
+  llm_nudge_interval: 50
+  between_trail_recalibrate_eye_tracker: false
 
 vs:
+  display: *display
+  fullscreen: *fullscreen
   width: 800
   height: 600
-  fullscreen: true
-  screen: 1
   rows: 4
   cols: 4
   total_trials: 5
-  fixation_time: 600 # (ms)
-  post_trial_pause: 2000 # (ms)
-  response_timeout: 3 # (s)
+  fixation_time: 600
+  post_trial_pause: 2000
+  response_timeout: 3
   angles: [0, 90, 180, 270]
   output_file: 'vs_results.csv'
-  background_color: [120, 120, 120] # gray
-  fixation_color: [0, 0, 0] # black
+  background_color: [120, 120, 120]
+  fixation_color: [0, 0, 0]
 
 surveys:
+  display: *display
+  fullscreen: *fullscreen
   sart_save_path: 'sart_results.csv'
   nasa_tlx_save_path: 'nasa_tlx_results.csv'
-  display: 0
-  fullscreen: true
 
 mot:
+  display: *display
+  fullscreen: *fullscreen
   width: 800
   height: 600
-  fullscreen: true
-  screen: 1
   num_objects: 15
   num_targets: 3
   radius: 25
   total_trials: 5
   speed: 4.0
-  fixation_time: 1.0 # (s)
+  fixation_time: 1.0
   target_display_time: 2.0
-  trial_time: 6.0 # (s)
-  post_trial_pause: 2.0 # (s)
+  trial_time: 6.0
+  post_trial_pause: 2.0
   output_file: 'mot_results.csv'
-  background_color: [120, 120, 120] # gray
-  fixation_color: [0, 0, 0] # black
+  background_color: [120, 120, 120]
+  fixation_color: [0, 0, 0]
