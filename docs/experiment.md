@@ -4,26 +4,14 @@
 
 ## Task sequence
 
-```text
-Tobii Calibration
-       │
-       ▼
-Visual Search Task  (baseline cognitive measure)
-       │
-       ▼
-Multi-Object Tracking Task  (baseline cognitive measure)
-       │
-       ▼
-Tutorial  (single-room practice)
-       │
-       ▼
-Main SAR Game  (primary task, with LLM assistant)
-       │
-       ▼
-SART Survey  (situation awareness)
-       │
-       ▼
-NASA-TLX Survey  (perceived workload)
+```mermaid
+flowchart TD
+    A["Tobii Calibration"] --> B["Visual Search Task<br/>(baseline cognitive measure)"]
+    B --> C["Multi-Object Tracking Task<br/>(baseline cognitive measure)"]
+    C --> D["Tutorial<br/>(single-room practice)"]
+    D --> E["Main SAR Game<br/>(primary task, with LLM assistant)"]
+    E --> F["SART Survey<br/>(situation awareness)"]
+    F --> G["NASA-TLX Survey<br/>(perceived workload)"]
 ```
 
 ## Data collection

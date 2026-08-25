@@ -57,20 +57,46 @@ mosaic/
 ## The mosaic / experiment split
 
 `mosaic/` defines contracts and generic defaults; `experiment/` supplies this lab's specific
-implementations and wires them in via constructor injection. For example:
+implementations and wires them in via constructor injection.
 
-- `mosaic.llm.client.LLMClient` is an abstract contract (`query(prompt) -> str`); `mosaic.llm.client.DummyLLMClient`
-  is a no-op implementation useful for testing without API keys. The concrete provider-backed
-  implementation (`LlamaIndexLLMClient`, wrapping OpenAI/Google via `llama_index`) and its
-  `build_llm_client()` factory live in `experiment/llm.py`, not in `mosaic`.
-- `mosaic.core.placers.Placer` is an abstract placement contract; `mosaic.sar.placers.VictimPlacer`
-  ships neutral defaults, while `experiment.placers.LavaRiskVictimPlacer` carries this study's
-  tuned health/decay behavior.
-- `mosaic.gui.main.SAREnvGUI` accepts every major component (`llm_client`, `prompt_builder`,
-  `response_processor`, `user`, `info_panel`, `chat_panel`, `vignette`) as constructor
-  parameters, defaulting to the neutral `mosaic` implementations when omitted — callers (like
-  `experiment/`) compose it from already-built instances rather than subclassing or passing
-  partial factories.
+```mermaid
+flowchart LR
+    subgraph mosaic["mosaic/ (installable, neutral)"]
+        LLMClient["LLMClient (ABC)"]
+        Dummy["DummyLLMClient"]
+        Placer["Placer (ABC)"]
+        VictimPlacer["VictimPlacer"]
+        GUI["SAREnvGUI(llm_client, ...)"]
+    end
+
+    subgraph experiment["experiment/ (this lab's study)"]
+        LlamaIndexLLMClient["LlamaIndexLLMClient"]
+        buildLlmClient["build_llm_client()"]
+        LavaRiskVictimPlacer["LavaRiskVictimPlacer"]
+    end
+
+    LLMClient -.implements.-> LlamaIndexLLMClient
+    LLMClient -.implements.-> Dummy
+    Placer -.implements.-> VictimPlacer
+    Placer -.implements.-> LavaRiskVictimPlacer
+    buildLlmClient -->|constructs| LlamaIndexLLMClient
+    buildLlmClient -->|injected into| GUI
+    LavaRiskVictimPlacer -->|injected into| GUI
+```
+
+!!! note "Contract lives in `mosaic`, wiring lives in `experiment`"
+    - `mosaic.llm.client.LLMClient` is an abstract contract (`query(prompt) -> str`); `mosaic.llm.client.DummyLLMClient`
+      is a no-op implementation useful for testing without API keys. The concrete provider-backed
+      implementation (`LlamaIndexLLMClient`, wrapping OpenAI/Google via `llama_index`) and its
+      `build_llm_client()` factory live in `experiment/llm.py`, not in `mosaic`.
+    - `mosaic.core.placers.Placer` is an abstract placement contract; `mosaic.sar.placers.VictimPlacer`
+      ships neutral defaults, while `experiment.placers.LavaRiskVictimPlacer` carries this study's
+      tuned health/decay behavior.
+    - `mosaic.gui.main.SAREnvGUI` accepts every major component (`llm_client`, `prompt_builder`,
+      `response_processor`, `user`, `info_panel`, `chat_panel`, `vignette`) as constructor
+      parameters, defaulting to the neutral `mosaic` implementations when omitted — callers (like
+      `experiment/`) compose it from already-built instances rather than subclassing or passing
+      partial factories.
 
 ## Design patterns
 
@@ -83,28 +109,19 @@ implementations and wires them in via constructor injection. For example:
 
 ## High-level data flow
 
-```text
-Keyboard Input
-      │
-      ▼
-User.handle_key()
-      │
-      ▼
-PickupVictimEnv.step(action)
-  ├── Move / rotate agent
-  ├── Trigger RescueAction (pickup)
-  ├── Deplete victim health
-  ├── Check mission state
-  └── Return observation dict
-      │
-      ▼
-GameObservation.process()
-  └── Encode grid, position, status
-      │
-      ▼
-SAREnvGUI.render()
-  ├── Camera.get_crop() → RGB frame
-  ├── InfoPanel.update()
-  ├── ChatPanel.update()
-  └── EdgeVignette.trigger(events)
+```mermaid
+flowchart TD
+    A["Keyboard Input"] --> B["User.handle_key()"]
+    B --> C["PickupVictimEnv.step(action)"]
+    C --> C1["Move / rotate agent"]
+    C --> C2["Trigger RescueAction (pickup)"]
+    C --> C3["Deplete victim health"]
+    C --> C4["Check mission state"]
+    C --> D["Return observation dict"]
+    D --> E["GameObservation.process()<br/>Encode grid, position, status"]
+    E --> F["SAREnvGUI.render()"]
+    F --> F1["Camera.get_crop() → RGB frame"]
+    F --> F2["InfoPanel.update()"]
+    F --> F3["ChatPanel.update()"]
+    F --> F4["EdgeVignette.trigger(events)"]
 ```

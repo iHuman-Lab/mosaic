@@ -4,16 +4,13 @@
 
 The top-level Pygame controller. Layout:
 
-```text
-┌──────────────────────────┬──────────────┐
-│                          │              │
-│   Game Viewport          │  Info Panel  │
-│   (800 × 800 px)         │  (400 px)    │
-│                          │              │
-│                          ├──────────────┤
-│                          │  Chat Panel  │
-│                          │  (LLM msgs)  │
-└──────────────────────────┴──────────────┘
+```mermaid
+block-beta
+columns 2
+viewport["Game Viewport (800 × 800 px)"]
+info["Info Panel (400 px)"]
+space:1
+chat["Chat Panel (LLM msgs)"]
 ```
 
 - 30 FPS rendering loop
