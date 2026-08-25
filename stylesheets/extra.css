@@ -1,0 +1,47 @@
+/* iHuman Lab brand: dark header + orange accent, matching lab-website/custom.scss */
+
+:root,
+[data-md-color-primary="black"]:not([data-md-color-scheme="slate"]) {
+  --md-primary-fg-color: #252525;
+  --md-primary-fg-color--light: #3a3a3a;
+  --md-primary-fg-color--dark: #181818;
+  --md-primary-bg-color: #ffffff;
+
+  --md-accent-fg-color: #ec672c;
+  --md-accent-fg-color--transparent: #ec672c1a;
+  --md-accent-bg-color: #ffffff;
+
+  --md-typeset-a-color: #ec672c;
+}
+
+[data-md-color-scheme="slate"][data-md-color-primary="black"] {
+  --md-primary-fg-color: #181818;
+  --md-primary-fg-color--light: #252525;
+  --md-primary-fg-color--dark: #101010;
+
+  --md-accent-fg-color: #ec672c;
+  --md-accent-fg-color--transparent: #ec672c26;
+
+  --md-typeset-a-color: #f0854f;
+}
+
+.md-typeset a:hover {
+  color: #ec672c;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+  font-family: "Roboto", "Rubik", sans-serif;
+}
+
+.md-typeset h2 {
+  border-left: 4px solid #ec672c;
+  padding-left: 0.6rem;
+}
+
+/* Indent nested sidebar sections (e.g. API Reference) so sub-pages read as a tree */
+.md-nav__item--nested > .md-nav > .md-nav__list {
+  padding-left: 0.9rem;
+  border-left: 1px solid var(--md-default-fg-color--lightest);
+}

@@ -1,0 +1,1452 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A modular grid-based Search and Rescue simulation platform for studying human-AI teaming">
+      
+      
+      
+      
+        <link rel="prev" href="../architecture/">
+      
+      
+        <link rel="next" href="../gui/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Core Systems - MOSAIC</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Rubik";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#core-systems" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="MOSAIC" class="md-header__button md-logo" aria-label="MOSAIC" data-md-component="logo">
+      
+  <img src="../assets/images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MOSAIC
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Core Systems
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/iHuman-Lab/mosaic" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    iHuman-Lab/mosaic
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="MOSAIC" class="md-nav__button md-logo" aria-label="MOSAIC" data-md-component="logo">
+      
+  <img src="../assets/images/logo.png" alt="logo">
+
+    </a>
+    MOSAIC
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/iHuman-Lab/mosaic" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    iHuman-Lab/mosaic
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../game-concept/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Game Concept
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Systems
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Systems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#level-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level generation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#victim-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Victim system
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Victim system">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#real-victims-victim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real victims (Victim)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fake-victims-fakevictim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fake victims (FakeVictim)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#placement-victimplacer-srcmosaicsarplacerspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Placement (VictimPlacer) — src/mosaic/sar/placers.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hazards-obstacles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hazards &amp; obstacles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mission-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mission system
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#camera-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Camera system
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observation-encoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observation encoding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reward-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reward system
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GUI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../llm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../experiment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/sar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SAR Components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/gui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GUI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/llm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#level-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level generation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#victim-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Victim system
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Victim system">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#real-victims-victim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Real victims (Victim)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fake-victims-fakevictim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fake victims (FakeVictim)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#placement-victimplacer-srcmosaicsarplacerspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Placement (VictimPlacer) — src/mosaic/sar/placers.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hazards-obstacles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hazards &amp; obstacles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mission-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mission system
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#camera-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Camera system
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observation-encoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observation encoding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reward-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reward system
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/iHuman-Lab/mosaic/edit/main/docs/core-systems.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="core-systems">Core Systems<a class="headerlink" href="#core-systems" title="Permanent link">&para;</a></h1>
+<h2 id="environment">Environment<a class="headerlink" href="#environment" title="Permanent link">&para;</a></h2>
+<p><strong>Class:</strong> <code>PickupVictimEnv</code> — <code>src/mosaic/sar/env.py</code></p>
+<p>The main Gymnasium-compatible environment. Inherits from <code>SARLevelGen</code>.</p>
+<p><strong>Key configuration parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>room_size</code></td>
+<td>14</td>
+<td>Tiles per room (interior)</td>
+</tr>
+<tr>
+<td><code>num_rows</code></td>
+<td>3</td>
+<td>Rows of rooms</td>
+</tr>
+<tr>
+<td><code>num_cols</code></td>
+<td>3</td>
+<td>Columns of rooms</td>
+</tr>
+<tr>
+<td><code>victim_placer</code></td>
+<td><code>VictimPlacer()</code></td>
+<td>Placer controlling victim placement</td>
+</tr>
+<tr>
+<td><code>lava_placer</code></td>
+<td><code>LavaPlacer()</code></td>
+<td>Placer controlling lava placement</td>
+</tr>
+<tr>
+<td><code>locked_room_placer</code></td>
+<td><code>LockedRoomPlacer()</code></td>
+<td>Placer controlling locked doors/keys</td>
+</tr>
+<tr>
+<td><code>agent_pov</code></td>
+<td>True</td>
+<td>Enable first-person view camera</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key methods:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gen_mission()</code></td>
+<td>Generates a full level: rooms, doors, keys, lava, victims</td>
+</tr>
+<tr>
+<td><code>reset()</code></td>
+<td>Initializes an episode; computes <code>max_steps</code></td>
+</tr>
+<tr>
+<td><code>step(action)</code></td>
+<td>Processes one action; updates victim health, checks end conditions</td>
+</tr>
+<tr>
+<td><code>get_mission_status()</code></td>
+<td>Returns <code>{status, saved_victims, remaining_victims}</code></td>
+</tr>
+<tr>
+<td><code>switch_camera(strategy)</code></td>
+<td>Swaps camera strategy at runtime</td>
+</tr>
+</tbody>
+</table>
+<p>Use the <code>build_sar_env()</code> factory (<code>src/mosaic/sar/env.py</code>) to construct a fully configured
+instance from already-built placer instances instead of calling <code>PickupVictimEnv(...)</code> directly.</p>
+<h2 id="level-generation">Level generation<a class="headerlink" href="#level-generation" title="Permanent link">&para;</a></h2>
+<p><strong>Class:</strong> <code>SARLevelGen</code> — <code>src/mosaic/core/level.py</code></p>
+<p>Inherits from MiniGrid's <code>MiniGridEnv</code>. Provides:</p>
+<ul>
+<li>Multi-room grid construction</li>
+<li>Pluggable camera injection</li>
+<li>Base rendering with camera-aware crop</li>
+</ul>
+<p>Subclassed by <code>PickupVictimEnv</code> and <code>TutorialEnv</code>.</p>
+<h2 id="victim-system">Victim system<a class="headerlink" href="#victim-system" title="Permanent link">&para;</a></h2>
+<p><strong>File:</strong> <code>src/mosaic/sar/objects.py</code></p>
+<h3 id="real-victims-victim">Real victims (<code>Victim</code>)<a class="headerlink" href="#real-victims-victim" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Rendered as a symmetric <strong>cross (✚)</strong></li>
+<li>Directional variants: <code>victim_up</code>, <code>victim_down</code>, <code>victim_left</code>, <code>victim_right</code></li>
+<li>Have a <code>health</code> property (0.0 → 1.0) with a rendered health bar</li>
+<li>Reward on rescue: <strong>+1.0</strong></li>
+</ul>
+<h3 id="fake-victims-fakevictim">Fake victims (<code>FakeVictim</code>)<a class="headerlink" href="#fake-victims-fakevictim" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Rendered as an asymmetric <strong>T-shape (⊤)</strong></li>
+<li>Left/right shift variants to vary appearance</li>
+<li>Same health depletion system as real victims</li>
+<li>Penalty on accidental rescue: <strong>-0.5</strong></li>
+</ul>
+<h3 id="placement-victimplacer-srcmosaicsarplacerspy">Placement (<code>VictimPlacer</code>) — <code>src/mosaic/sar/placers.py</code><a class="headerlink" href="#placement-victimplacer-srcmosaicsarplacerspy" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Real victims placed preferentially in locked rooms (harder to reach)</li>
+<li>Fake victims distributed across all accessible rooms</li>
+<li>Reachability verified before placement (no inaccessible victims)</li>
+</ul>
+<h2 id="hazards-obstacles">Hazards &amp; obstacles<a class="headerlink" href="#hazards-obstacles" title="Permanent link">&para;</a></h2>
+<p><strong>Lava</strong> (<code>LavaPlacer</code>) — <code>src/mosaic/sar/placers.py</code></p>
+<ul>
+<li>Placed randomly within rooms, avoiding doorways and agent spawn</li>
+<li>Stepping on lava immediately terminates the episode with failure</li>
+<li>Density controlled by the placer's configuration</li>
+</ul>
+<p><strong>Locked doors &amp; keys</strong></p>
+<ul>
+<li>A subset of room connections are randomly locked, controlled by <code>LockedRoomPlacer</code></li>
+<li>A matching colored key is placed in a reachable (unlocked) room</li>
+<li>The agent must carry the key to toggle the locked door open</li>
+</ul>
+<h2 id="mission-system">Mission system<a class="headerlink" href="#mission-system" title="Permanent link">&para;</a></h2>
+<p><strong>Class:</strong> <code>PickupAllVictimsInstr</code> — <code>src/mosaic/sar/instructions.py</code></p>
+<p>Manages mission completion logic:</p>
+<ul>
+<li>Tracks rescued vs. remaining real victims</li>
+<li>Reports <code>success</code> when all real victims rescued</li>
+<li>Reports <code>failure</code> on lava contact or timeout</li>
+</ul>
+<h2 id="camera-system">Camera system<a class="headerlink" href="#camera-system" title="Permanent link">&para;</a></h2>
+<p><strong>File:</strong> <code>src/mosaic/core/camera.py</code></p>
+<p>Interchangeable camera strategies:</p>
+<ul>
+<li><strong><code>FullviewCamera</code></strong> — Shows the entire grid at once. Best for small maps or debugging.</li>
+<li><strong><code>AgentCenteredCamera</code></strong> — Centers the viewport on the agent. Entire room plus border tiles always visible.</li>
+<li><strong><code>EdgeFollowCamera</code></strong> <em>(default)</em> — Camera moves only when the agent approaches the edge of the viewport (dead-zone tracking).</li>
+<li><strong><code>AgentFOVCamera</code></strong> — Clips the view to the boundaries of the agent's current room. Natural wall framing.</li>
+<li><strong><code>AgentConeCamera</code></strong> — Room-bounded view with MiniGrid's line-of-sight cone; tiles outside the agent's forward sightline are blacked out.</li>
+</ul>
+<p>Switch cameras at runtime:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">env</span><span class="o">.</span><span class="n">switch_camera</span><span class="p">(</span><span class="s2">"edge_follow"</span><span class="p">)</span>   <span class="c1"># or "full", "centered", "fov", "cone"</span>
+</code></pre></div>
+<h2 id="observation-encoding">Observation encoding<a class="headerlink" href="#observation-encoding" title="Permanent link">&para;</a></h2>
+<p><strong>Class:</strong> <code>GameObservation</code> — <code>src/mosaic/sar/observations.py</code></p>
+<p>Returns a dict on each step:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image</code></td>
+<td>ndarray (H×W×3)</td>
+<td>RGB camera frame</td>
+</tr>
+<tr>
+<td><code>direction</code></td>
+<td>int</td>
+<td>Agent facing: 0=E, 1=S, 2=W, 3=N</td>
+</tr>
+<tr>
+<td><code>agent_x</code>, <code>agent_y</code></td>
+<td>int</td>
+<td>Agent grid position</td>
+</tr>
+<tr>
+<td><code>grid</code></td>
+<td>ndarray (H×W)</td>
+<td>Full map encoded as integers (see below)</td>
+</tr>
+<tr>
+<td><code>carrying</code></td>
+<td>str or None</td>
+<td>Color of held object</td>
+</tr>
+<tr>
+<td><code>step_count</code></td>
+<td>int</td>
+<td>Steps elapsed this episode</td>
+</tr>
+<tr>
+<td><code>max_steps</code></td>
+<td>int</td>
+<td>Episode step limit</td>
+</tr>
+<tr>
+<td><code>mission_status</code></td>
+<td>str</td>
+<td><code>"success"</code>, <code>"failure"</code>, or <code>"incomplete"</code></td>
+</tr>
+<tr>
+<td><code>saved_victims</code></td>
+<td>int</td>
+<td>Count of rescued real victims</td>
+</tr>
+<tr>
+<td><code>remaining_victims</code></td>
+<td>int</td>
+<td>Count of unrescued real victims</td>
+</tr>
+<tr>
+<td><code>num_rows</code>, <code>num_cols</code></td>
+<td>int</td>
+<td>Map dimensions in rooms</td>
+</tr>
+<tr>
+<td><code>room_size</code></td>
+<td>int</td>
+<td>Room size in tiles</td>
+</tr>
+<tr>
+<td><code>cam_top_x</code>, <code>cam_top_y</code></td>
+<td>int</td>
+<td>Camera viewport top-left tile</td>
+</tr>
+<tr>
+<td><code>cam_view_w</code>, <code>cam_view_h</code></td>
+<td>int</td>
+<td>Camera viewport size in tiles</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Grid integer encoding:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>0       = Empty floor
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>1       = Wall
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>4       = Lava
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>5       = Victim (real)
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>6       = FakeVictim (decoy)
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>Doors:  10 + (color_index × 3) + door_state
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  door_state: 0=open, 1=closed, 2=locked
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  color_index: red=0, green=1, blue=2, purple=3, yellow=4, grey=5
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>  Range: 10-27
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>Keys:   30 + color_index
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>  Range: 30-35
+</code></pre></div>
+<h2 id="reward-system">Reward system<a class="headerlink" href="#reward-system" title="Permanent link">&para;</a></h2>
+<p><strong>Class:</strong> <code>RescueAction</code> — <code>src/mosaic/sar/actions.py</code></p>
+<p>All rewards are sparse (returned only on specific events):</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Reward</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rescue a real victim</td>
+<td>+1.0</td>
+</tr>
+<tr>
+<td>Pick up a fake victim</td>
+<td>-0.5</td>
+</tr>
+<tr>
+<td>All victims rescued (mission complete)</td>
+<td>+1.0 bonus</td>
+</tr>
+<tr>
+<td>Step on lava</td>
+<td>episode terminated, no reward</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>episode terminated, no reward</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.action.edit", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

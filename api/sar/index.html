@@ -1,0 +1,3644 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A modular grid-based Search and Rescue simulation platform for studying human-AI teaming">
+      
+      
+      
+      
+        <link rel="prev" href="../core/">
+      
+      
+        <link rel="next" href="../gui/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>SAR Components - MOSAIC</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rubik:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Rubik";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sar-components" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="MOSAIC" class="md-header__button md-logo" aria-label="MOSAIC" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MOSAIC
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SAR Components
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/iHuman-Lab/mosaic" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    iHuman-Lab/mosaic
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="MOSAIC" class="md-nav__button md-logo" aria-label="MOSAIC" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    MOSAIC
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/iHuman-Lab/mosaic" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    iHuman-Lab/mosaic
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../game-concept/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Game Concept
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../core-systems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Systems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GUI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../llm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../experiment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Experiment Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SAR Components
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SAR Components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mosaic.sar.objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        objects
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.FakeVictim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FakeVictim
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.Victim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Victim
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.VictimBase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VictimBase
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="VictimBase">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.VictimBase.can_overlap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        can_overlap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.VictimBase.can_pickup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        can_pickup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.VictimBase.deplete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        deplete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.VictimBase.render" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        render
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mosaic.sar.actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        actions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="actions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.actions.BaseAction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BaseAction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BaseAction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.actions.BaseAction.reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.actions.BaseAction.verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        verify
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.actions.RescueAction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RescueAction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.actions.RescueRewards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RescueRewards
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mosaic.sar.observations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        observations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="observations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.GameObservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GameObservation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GameObservation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.GameObservation.process_observation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        process_observation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.ObservationProcessor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ObservationProcessor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ObservationProcessor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.ObservationProcessor.process_observation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        process_observation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.ObservationProcessor.reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reset
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.cam_bounds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cam_bounds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.scan_grid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scan_grid
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mosaic.sar.instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        instructions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="instructions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.instructions.PickupAllVictimsInstr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PickupAllVictimsInstr
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PickupAllVictimsInstr">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.instructions.PickupAllVictimsInstr.reset_verifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reset_verifier
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.instructions.PickupAllVictimsInstr.surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        surface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.instructions.PickupAllVictimsInstr.verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        verify
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mosaic.sar.placers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        placers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="placers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.placers.LavaPlacer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LavaPlacer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LavaPlacer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.placers.LavaPlacer.place_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        place_all
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.placers.LavaPlacer.place_in_room" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        place_in_room
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.placers.LockedRoomPlacer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LockedRoomPlacer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.placers.VictimPlacer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VictimPlacer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="VictimPlacer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.placers.VictimPlacer.place_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        place_all
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GUI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../llm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mosaic.sar.objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        objects
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="objects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.FakeVictim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FakeVictim
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.Victim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Victim
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.VictimBase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VictimBase
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="VictimBase">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.VictimBase.can_overlap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        can_overlap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.VictimBase.can_pickup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        can_pickup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.VictimBase.deplete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        deplete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.objects.VictimBase.render" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        render
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mosaic.sar.actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        actions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="actions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.actions.BaseAction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BaseAction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BaseAction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.actions.BaseAction.reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.actions.BaseAction.verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        verify
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.actions.RescueAction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RescueAction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.actions.RescueRewards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RescueRewards
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mosaic.sar.observations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        observations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="observations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.GameObservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GameObservation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GameObservation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.GameObservation.process_observation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        process_observation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.ObservationProcessor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ObservationProcessor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ObservationProcessor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.ObservationProcessor.process_observation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        process_observation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.ObservationProcessor.reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reset
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.cam_bounds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cam_bounds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.observations.scan_grid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scan_grid
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mosaic.sar.instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        instructions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="instructions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.instructions.PickupAllVictimsInstr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PickupAllVictimsInstr
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PickupAllVictimsInstr">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.instructions.PickupAllVictimsInstr.reset_verifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reset_verifier
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.instructions.PickupAllVictimsInstr.surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        surface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.instructions.PickupAllVictimsInstr.verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        verify
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mosaic.sar.placers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        placers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="placers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.placers.LavaPlacer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LavaPlacer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LavaPlacer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.placers.LavaPlacer.place_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        place_all
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.placers.LavaPlacer.place_in_room" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        place_in_room
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.placers.LockedRoomPlacer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LockedRoomPlacer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.placers.VictimPlacer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VictimPlacer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="VictimPlacer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mosaic.sar.placers.VictimPlacer.place_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        place_all
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/iHuman-Lab/mosaic/edit/main/docs/api/sar.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="sar-components">SAR Components<a class="headerlink" href="#sar-components" title="Permanent link">&para;</a></h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="mosaic.sar.objects" class="doc doc-heading">
+            <span class="doc doc-object-name doc-module-name">objects</span>
+
+
+<a href="#mosaic.sar.objects" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Classes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="FakeVictim (mosaic.sar.objects.FakeVictim)" href="#mosaic.sar.objects.FakeVictim">FakeVictim</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Fake victim with asymmetric T-shape.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="Victim (mosaic.sar.objects.Victim)" href="#mosaic.sar.objects.Victim">Victim</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Real victim with symmetric cross shape.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="VictimBase (mosaic.sar.objects.VictimBase)" href="#mosaic.sar.objects.VictimBase">VictimBase</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Base class for all victim objects with common functionality.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="mosaic.sar.objects.FakeVictim" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">FakeVictim</span>
+
+
+<a href="#mosaic.sar.objects.FakeVictim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">FakeVictim</span><span class="p">(</span><span class="n">shift</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="VictimBase (mosaic.sar.objects.VictimBase)" href="#mosaic.sar.objects.VictimBase">VictimBase</a></code></p>
+
+
+
+        <p>Fake victim with asymmetric T-shape.</p>
+
+        <p>Create a fake victim.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>shift</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Shift direction ("left" or "right")</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>direction</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Direction the T is pointing ("up", "down", "left", "right")</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>color</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Color of the fake victim (default "red")</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;red&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="mosaic.sar.objects.Victim" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">Victim</span>
+
+
+<a href="#mosaic.sar.objects.Victim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">Victim</span><span class="p">(</span><span class="n">direction</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="VictimBase (mosaic.sar.objects.VictimBase)" href="#mosaic.sar.objects.VictimBase">VictimBase</a></code></p>
+
+
+
+        <p>Real victim with symmetric cross shape.</p>
+
+        <p>Create a victim.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>direction</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Direction the victim is facing ("up", "down", "left", "right")</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>color</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Color of the victim (default "red")</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;red&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="mosaic.sar.objects.VictimBase" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">VictimBase</span>
+
+
+<a href="#mosaic.sar.objects.VictimBase" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">VictimBase</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="minigrid.core.world_object.WorldObj">WorldObj</span></code></p>
+
+
+
+        <p>Base class for all victim objects with common functionality.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="can_overlap (mosaic.sar.objects.VictimBase.can_overlap)" href="#mosaic.sar.objects.VictimBase.can_overlap">can_overlap</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Victims cannot be walked over.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="can_pickup (mosaic.sar.objects.VictimBase.can_pickup)" href="#mosaic.sar.objects.VictimBase.can_pickup">can_pickup</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Victims can be picked up.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="deplete (mosaic.sar.objects.VictimBase.deplete)" href="#mosaic.sar.objects.VictimBase.deplete">deplete</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Decrease health by amount * deplete_rate, clamped to [0, 1].</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="render (mosaic.sar.objects.VictimBase.render)" href="#mosaic.sar.objects.VictimBase.render">render</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Render the victim using defined coordinates.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.objects.VictimBase.can_overlap" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">can_overlap</span>
+
+
+<a href="#mosaic.sar.objects.VictimBase.can_overlap" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">can_overlap</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Victims cannot be walked over.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.objects.VictimBase.can_pickup" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">can_pickup</span>
+
+
+<a href="#mosaic.sar.objects.VictimBase.can_pickup" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">can_pickup</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Victims can be picked up.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.objects.VictimBase.deplete" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">deplete</span>
+
+
+<a href="#mosaic.sar.objects.VictimBase.deplete" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">deplete</span><span class="p">(</span><span class="n">amount</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Decrease health by amount * deplete_rate, clamped to [0, 1].
+Negative deplete_rate means the victim regenerates health.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.objects.VictimBase.render" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">render</span>
+
+
+<a href="#mosaic.sar.objects.VictimBase.render" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">render</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Render the victim using defined coordinates.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="mosaic.sar.actions" class="doc doc-heading">
+            <span class="doc doc-object-name doc-module-name">actions</span>
+
+
+<a href="#mosaic.sar.actions" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Classes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="BaseAction (mosaic.sar.actions.BaseAction)" href="#mosaic.sar.actions.BaseAction">BaseAction</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Abstract base class for all actions.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="RescueAction (mosaic.sar.actions.RescueAction)" href="#mosaic.sar.actions.RescueAction">RescueAction</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Pick up a real victim (alive/dead) or a fake victim.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="RescueRewards
+
+
+  
+      dataclass
+   (mosaic.sar.actions.RescueRewards)" href="#mosaic.sar.actions.RescueRewards">RescueRewards</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Reward magnitudes for RescueAction. Neutral plain-RL defaults —</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="mosaic.sar.actions.BaseAction" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">BaseAction</span>
+
+
+<a href="#mosaic.sar.actions.BaseAction" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">BaseAction</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Abstract base class for all actions.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="reset (mosaic.sar.actions.BaseAction.reset)" href="#mosaic.sar.actions.BaseAction.reset">reset</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Optional per-episode reset hook. No-op by default.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="verify (mosaic.sar.actions.BaseAction.verify)" href="#mosaic.sar.actions.BaseAction.verify">verify</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Check the env's mission after this action. Returns</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.actions.BaseAction.reset" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">reset</span>
+
+
+<a href="#mosaic.sar.actions.BaseAction.reset" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">reset</span><span class="p">(</span><span class="n">level_gen</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Optional per-episode reset hook. No-op by default.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.actions.BaseAction.verify" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">verify</span>
+
+
+<a href="#mosaic.sar.actions.BaseAction.verify" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">verify</span><span class="p">()</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Check the env's mission after this action. Returns
+(terminated, bonus_reward, info). Default: checks self.env.instrs.verify().
+Any action can call this to opt into mission-completion checking; most
+actions (e.g. movement) shouldn't call it at all.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="mosaic.sar.actions.RescueAction" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">RescueAction</span>
+
+
+<a href="#mosaic.sar.actions.RescueAction" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">RescueAction</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rewards</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="BaseAction (mosaic.sar.actions.BaseAction)" href="#mosaic.sar.actions.BaseAction">BaseAction</a></code></p>
+
+
+
+        <p>Pick up a real victim (alive/dead) or a fake victim.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="mosaic.sar.actions.RescueRewards" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">RescueRewards</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#mosaic.sar.actions.RescueRewards" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">RescueRewards</span><span class="p">(</span><span class="n">real_victim_alive</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">fake_victim</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">real_victim_dead</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Reward magnitudes for RescueAction. Neutral plain-RL defaults —
+override with study-calibrated values via RescueAction(rewards=...).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="mosaic.sar.observations" class="doc doc-heading">
+            <span class="doc doc-object-name doc-module-name">observations</span>
+
+
+<a href="#mosaic.sar.observations" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Classes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="GameObservation (mosaic.sar.observations.GameObservation)" href="#mosaic.sar.observations.GameObservation">GameObservation</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Processes the raw env observation into an enriched obs dict each step.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="ObservationProcessor (mosaic.sar.observations.ObservationProcessor)" href="#mosaic.sar.observations.ObservationProcessor">ObservationProcessor</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Abstract base class for processing the raw env observation each step.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+<p><span class="doc-section-title">Functions:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="cam_bounds (mosaic.sar.observations.cam_bounds)" href="#mosaic.sar.observations.cam_bounds">cam_bounds</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Return (x0, y0, x1, y1) camera view bounds from an obs dict.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="scan_grid (mosaic.sar.observations.scan_grid)" href="#mosaic.sar.observations.scan_grid">scan_grid</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Single-pass grid scan returning a (height x width) int list.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="mosaic.sar.observations.GameObservation" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">GameObservation</span>
+
+
+<a href="#mosaic.sar.observations.GameObservation" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="ObservationProcessor (mosaic.sar.observations.ObservationProcessor)" href="#mosaic.sar.observations.ObservationProcessor">ObservationProcessor</a></code></p>
+
+
+
+        <p>Processes the raw env observation into an enriched obs dict each step.</p>
+<p>Instantiated once on the env. Call process_observation(obs, env) each step.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="process_observation (mosaic.sar.observations.GameObservation.process_observation)" href="#mosaic.sar.observations.GameObservation.process_observation">process_observation</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Enrich and return the obs dict with full game state.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.observations.GameObservation.process_observation" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">process_observation</span>
+
+
+<a href="#mosaic.sar.observations.GameObservation.process_observation" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">process_observation</span><span class="p">(</span><span class="n">obs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Enrich and return the obs dict with full game state.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="mosaic.sar.observations.ObservationProcessor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">ObservationProcessor</span>
+
+
+<a href="#mosaic.sar.observations.ObservationProcessor" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+
+        <p>Abstract base class for processing the raw env observation each step.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="process_observation
+
+
+  
+      abstractmethod
+   (mosaic.sar.observations.ObservationProcessor.process_observation)" href="#mosaic.sar.observations.ObservationProcessor.process_observation">process_observation</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Enrich and return the obs dict with full game state.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="reset (mosaic.sar.observations.ObservationProcessor.reset)" href="#mosaic.sar.observations.ObservationProcessor.reset">reset</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Optional per-episode reset hook. No-op by default.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.observations.ObservationProcessor.process_observation" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">process_observation</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+<a href="#mosaic.sar.observations.ObservationProcessor.process_observation" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">process_observation</span><span class="p">(</span><span class="n">obs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Enrich and return the obs dict with full game state.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.observations.ObservationProcessor.reset" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">reset</span>
+
+
+<a href="#mosaic.sar.observations.ObservationProcessor.reset" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">reset</span><span class="p">(</span><span class="n">level_gen</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Optional per-episode reset hook. No-op by default.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="mosaic.sar.observations.cam_bounds" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">cam_bounds</span>
+
+
+<a href="#mosaic.sar.observations.cam_bounds" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">cam_bounds</span><span class="p">(</span><span class="n">obs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return (x0, y0, x1, y1) camera view bounds from an obs dict.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="mosaic.sar.observations.scan_grid" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">scan_grid</span>
+
+
+<a href="#mosaic.sar.observations.scan_grid" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">scan_grid</span><span class="p">(</span><span class="n">env</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Single-pass grid scan returning a (height x width) int list.</p>
+
+
+<details class="encoding" open>
+  <summary>Encoding</summary>
+  <p>0=empty, 1=wall, 4=lava, 5=victim, 6=fake_victim
+10-27: door (DOOR_BASE + color_idx*3 + state; state 0=open,1=closed,2=locked)
+30-35: key  (KEY_BASE + color_idx)</p>
+</details>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="mosaic.sar.instructions" class="doc doc-heading">
+            <span class="doc doc-object-name doc-module-name">instructions</span>
+
+
+<a href="#mosaic.sar.instructions" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Classes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PickupAllVictimsInstr (mosaic.sar.instructions.PickupAllVictimsInstr)" href="#mosaic.sar.instructions.PickupAllVictimsInstr">PickupAllVictimsInstr</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Instruction to pick up all victims in the environment.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="mosaic.sar.instructions.PickupAllVictimsInstr" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">PickupAllVictimsInstr</span>
+
+
+<a href="#mosaic.sar.instructions.PickupAllVictimsInstr" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="minigrid.envs.babyai.core.verifier.Instr">Instr</span></code></p>
+
+
+
+        <p>Instruction to pick up all victims in the environment.
+This instruction verifies that all victims have been picked up (removed from grid).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="reset_verifier (mosaic.sar.instructions.PickupAllVictimsInstr.reset_verifier)" href="#mosaic.sar.instructions.PickupAllVictimsInstr.reset_verifier">reset_verifier</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Called on env reset, once this episode's victims are placed; sets</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="surface (mosaic.sar.instructions.PickupAllVictimsInstr.surface)" href="#mosaic.sar.instructions.PickupAllVictimsInstr.surface">surface</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Return a natural language description of the instruction.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="verify (mosaic.sar.instructions.PickupAllVictimsInstr.verify)" href="#mosaic.sar.instructions.PickupAllVictimsInstr.verify">verify</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Verify if all victims have been picked up.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.instructions.PickupAllVictimsInstr.reset_verifier" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">reset_verifier</span>
+
+
+<a href="#mosaic.sar.instructions.PickupAllVictimsInstr.reset_verifier" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">reset_verifier</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Called on env reset, once this episode's victims are placed; sets
+self.env so verify() can access the grid, and reads this episode's
+victim count off env.total_victims for num_navs_needed(). Note:
+surface() can't rely on this — RoomGridLevel._gen_grid() calls
+surface() before RoomGridLevel.reset() calls this — so it reads
+env.total_victims directly instead.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.instructions.PickupAllVictimsInstr.surface" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">surface</span>
+
+
+<a href="#mosaic.sar.instructions.PickupAllVictimsInstr.surface" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">surface</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a natural language description of the instruction.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>env</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The environment instance</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Description of the instruction</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.instructions.PickupAllVictimsInstr.verify" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">verify</span>
+
+
+<a href="#mosaic.sar.instructions.PickupAllVictimsInstr.verify" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">verify</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Verify if all victims have been picked up.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>str</code></td>            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>'success' if all victims picked up, 'continue' otherwise</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="mosaic.sar.placers" class="doc doc-heading">
+            <span class="doc doc-object-name doc-module-name">placers</span>
+
+
+<a href="#mosaic.sar.placers" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Classes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="LavaPlacer (mosaic.sar.placers.LavaPlacer)" href="#mosaic.sar.placers.LavaPlacer">LavaPlacer</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Handles placement of lava obstacles in the environment.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="LockedRoomPlacer (mosaic.sar.placers.LockedRoomPlacer)" href="#mosaic.sar.placers.LockedRoomPlacer">LockedRoomPlacer</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Handles placement of locked rooms and their corresponding keys.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="VictimPlacer (mosaic.sar.placers.VictimPlacer)" href="#mosaic.sar.placers.VictimPlacer">VictimPlacer</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Places real victims at random unoccupied cells, never in front of a</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="mosaic.sar.placers.LavaPlacer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">LavaPlacer</span>
+
+
+<a href="#mosaic.sar.placers.LavaPlacer" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">LavaPlacer</span><span class="p">(</span><span class="n">lava_per_room</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">lava_probability</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="Placer (mosaic.core.placers.Placer)" href="../core/#mosaic.core.placers.Placer">Placer</a></code></p>
+
+
+
+        <p>Handles placement of lava obstacles in the environment.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="place_all (mosaic.sar.placers.LavaPlacer.place_all)" href="#mosaic.sar.placers.LavaPlacer.place_all">place_all</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Place lava in all rooms based on configuration.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="place_in_room (mosaic.sar.placers.LavaPlacer.place_in_room)" href="#mosaic.sar.placers.LavaPlacer.place_in_room">place_in_room</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Place lava tiles at random cells in the room, never adjacent to a door.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.placers.LavaPlacer.place_all" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">place_all</span>
+
+
+<a href="#mosaic.sar.placers.LavaPlacer.place_all" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">place_all</span><span class="p">(</span><span class="n">level_gen</span><span class="p">,</span> <span class="n">num_rows</span><span class="p">,</span> <span class="n">num_cols</span><span class="p">,</span> <span class="n">skip_locked_rooms</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Place lava in all rooms based on configuration.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.placers.LavaPlacer.place_in_room" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">place_in_room</span>
+
+
+<a href="#mosaic.sar.placers.LavaPlacer.place_in_room" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">place_in_room</span><span class="p">(</span><span class="n">level_gen</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">num_lava</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Place lava tiles at random cells in the room, never adjacent to a door.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="mosaic.sar.placers.LockedRoomPlacer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">LockedRoomPlacer</span>
+
+
+<a href="#mosaic.sar.placers.LockedRoomPlacer" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">LockedRoomPlacer</span><span class="p">(</span><span class="n">locked_room_prob</span><span class="o">=</span><span class="mf">0.35</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="Placer (mosaic.core.placers.Placer)" href="../core/#mosaic.core.placers.Placer">Placer</a></code></p>
+
+
+
+        <p>Handles placement of locked rooms and their corresponding keys.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="mosaic.sar.placers.VictimPlacer" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">VictimPlacer</span>
+
+
+<a href="#mosaic.sar.placers.VictimPlacer" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">VictimPlacer</span><span class="p">(</span><span class="n">num_real_victims</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="Placer (mosaic.core.placers.Placer)" href="../core/#mosaic.core.placers.Placer">Placer</a></code></p>
+
+
+
+        <p>Places real victims at random unoccupied cells, never in front of a
+door. Victims get VictimBase's neutral defaults (health=1.0,
+deplete_rate=1.0) and a random direction — bare minimum, same shape as
+LockedRoomPlacer. Everything else victim-related — fake-victim decoys,
+custom health/decay, targeted placement, spread-out distribution, etc. —
+doesn't belong here — write a separate Placer in experiment/ instead;
+see experiment/placers.py.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="place_all (mosaic.sar.placers.VictimPlacer.place_all)" href="#mosaic.sar.placers.VictimPlacer.place_all">place_all</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Place victims at random cells in each room, never in front of a door.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="mosaic.sar.placers.VictimPlacer.place_all" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">place_all</span>
+
+
+<a href="#mosaic.sar.placers.VictimPlacer.place_all" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">place_all</span><span class="p">(</span><span class="n">level_gen</span><span class="p">,</span> <span class="n">num_rows</span><span class="p">,</span> <span class="n">num_cols</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Place victims at random cells in each room, never in front of a door.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.action.edit", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
