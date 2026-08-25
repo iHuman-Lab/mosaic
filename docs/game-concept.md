@@ -1,5 +1,7 @@
 # Game Concept & Mechanics
 
+![Agent view of a search-and-rescue building, with lava hazards, a locked-room key, and a decoy victim](assets/images/gui-screenshot.png)
+
 ## Objective
 
 Rescue **all real victims** before time runs out. Real victims are displayed as a **cross shape (✚)**. Fake victims (decoys) appear as a **T-shape (⊤)** — picking them up applies a score penalty.

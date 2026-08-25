@@ -1,5 +1,7 @@
 # GUI
 
+![MOSAIC GUI running a 3x3 search-and-rescue mission](assets/images/gui-screenshot.png)
+
 ## Main window (`SAREnvGUI`) — `src/mosaic/gui/main.py`
 
 The top-level Pygame controller. Layout:

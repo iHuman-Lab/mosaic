@@ -2,6 +2,10 @@
 
 *A Modular System for Adaptive Human–AI Collaboration*
 
+<p align="center">
+  <img src="assets/images/game-view.png" alt="MOSAIC search-and-rescue grid" width="320">
+</p>
+
 A grid-based Search and Rescue simulation platform for studying human–AI teaming, built on top of [MiniGrid](https://github.com/Farama-Foundation/Minigrid).
 
 ## What is MOSAIC?
@@ -27,4 +31,4 @@ Its first testbed is a search-and-rescue scenario: a building on fire, victims t
 
 - [Getting Started](getting-started.md) — install MOSAIC and run your first mission
 - [Architecture](architecture.md) — how `mosaic/` (the installable package) and `experiment/` (this lab's study wiring) fit together
-- [API Reference](api.md) — auto-generated reference from the source docstrings
+- [API Reference](api/index.md) — auto-generated reference from the source docstrings

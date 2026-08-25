@@ -45,7 +45,13 @@ nav:
   - Experiment Framework: experiment.md
   - Configuration: configuration.md
   - Testing: testing.md
-  - API Reference: api.md
+  - API Reference:
+      - Overview: api/index.md
+      - Environment: api/environment.md
+      - Core: api/core.md
+      - SAR Components: api/sar.md
+      - GUI: api/gui.md
+      - LLM: api/llm.md
 
 extra_css:
   - stylesheets/extra.css
@@ -80,9 +86,16 @@ plugins:
         python:
           paths: [src]
           options:
-            show_source: true
-            show_root_heading: true
             docstring_style: google
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            merge_init_into_class: true
+            separate_signature: true
+            show_signature_annotations: true
+            docstring_section_style: table
+            summary: true
+            filters: ["!^_"]
 
 watch:
   - src/mosaic
