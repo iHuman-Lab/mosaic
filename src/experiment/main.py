@@ -12,8 +12,8 @@ try:
     from mosaic.tutorial_env import TutorialEnv
 except ImportError:
     pass
-from .llm import build_llm_client
-from .placers import LavaRiskVictimPlacer, SectorSpreadLavaPlacer
+#from .llm import build_llm_client
+#from .placers import LavaRiskVictimPlacer, SectorSpreadLavaPlacer
 from .utils import skip_run
 
 load_dotenv()
@@ -51,7 +51,7 @@ with skip_run("run", "sar_gui_advanced") as check, check():
     gui.run()
 
 
-with skip_run("skip", "tutorial") as check, check():
+with skip_run("run", "tutorial") as check, check():
     # Access the width and height of the current display
     screen_height = pygame.display.Info().current_h
 
