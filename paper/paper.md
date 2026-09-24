@@ -129,6 +129,8 @@ When the figure exists, place it in paper/figures/ and reference it as:
 -->
 
 # Research impact statement
+MOSAIC lowers the engineering barrier to conducting controlled human–LLM (Large Language Model) teaming research by offering an integrated, reusable experimental platform. At its core is a dynamic, multi-room search-and-rescue task where human operators navigate environments, unlock doors, avoid hazards, and distinguish real victims from fake under time pressure and uncertainty. Built to standard reinforcement learning specifications via a Gymnasium-compatible interface, MOSAIC allows AI advisory agents to interact seamlessly within the simulation environment alongside human subjects.  
+Medium
 
 <!--
 OUTLINE - 150-250 words. Do not draft yet.
