@@ -2,21 +2,24 @@
 
 ## Prerequisites
 
-- Python 3.9+
+- Python 3.10+
 - A display server (X11 or native on macOS/Windows)
 - Optional: Tobii eye tracker + `tobii-research` SDK for eye-tracking experiments
 
 ## Install
 
 ```bash
+pip install ihuman-mosaic
+mosaic demo   # verify the install
+mosaic play   # open the GUI
+```
+
+To develop MOSAIC from source instead:
+
+```bash
 git clone https://github.com/iHuman-Lab/mosaic.git
 cd mosaic
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Or install as a package
-pip install -e .
+pip install -e ".[experiment]"
 ```
 
 ## API keys (for LLM features)

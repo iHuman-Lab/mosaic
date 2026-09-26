@@ -133,12 +133,13 @@ def test_study_placer_assigns_calibrated_values_end_to_end():
 
     # Every value the calibration can produce: the table, plus the "down"
     # short-circuit and the no-lava fallback.
+    placer = LavaRiskVictimPlacer()
     rates = {
         rate
-        for tiers in LavaRiskVictimPlacer._DEPLETE_RATES.values()
+        for tiers in placer.DEPLETE_RATES.values()
         for rate in tiers.values()
     } | {5.0, 0.5}
-    healths = set(LavaRiskVictimPlacer._STARTING_HEALTH.values()) | {0.75, 0.90}
+    healths = set(placer.STARTING_HEALTH.values()) | {0.75, 0.90}
 
     victims = victims_with_pos(env)
     assert victims

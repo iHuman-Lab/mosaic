@@ -40,58 +40,61 @@ Its first testbed is a search-and-rescue scenario: a building on fire, victims t
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/mosaic.git
-cd mosaic
-
-# Install dependencies
-pip install -r requirements.txt
-pip install minigrid pygame pygame_gui pyyaml
+pip install ihuman-mosaic
 ```
+
+The PyPI name is `ihuman-mosaic`; the Python package is `mosaic` (`import mosaic`). Python 3.10 or newer.
+
+Check it works, then play:
+
+```bash
+mosaic demo    # headless random-agent episode, prints a result
+mosaic play    # play a search-and-rescue mission in the GUI (no API key needed)
+```
+
+To work on MOSAIC itself, clone the repo and run `pip install -e ".[experiment]"`.
 
 ### Run Your First Rescue Mission
 
 ```python
-from mosaic.sar.env import PickupVictimEnv
-from mosaic.sar.placers import VictimPlacer
 from mosaic.gui.main import SAREnvGUI
+from mosaic.llm.client import DummyLLMClient
+from mosaic.sar.env import build_sar_env
+from mosaic.sar.placers import LavaPlacer, LockedRoomPlacer, VictimPlacer
 
-# Set up the mission
-victim_placer = VictimPlacer(
-    num_real_victims=3,    # 3 real victims to save
-)
-
-# Create the environment
-env = PickupVictimEnv(
+# Set up the mission: placers decide what goes where
+env = build_sar_env(
+    screen_size=800,
     num_rows=3,
     num_cols=3,
-    screen_size=800,
-    render_mode="rgb_array",
-    agent_pov=True,        # First-person view 👀
-    add_lava=True,         # Danger mode: ON 🔥
-    lava_per_room=2,
-    locked_room_prob=0.5,  # 50% rooms are locked 🔐
-    tile_size=64,
-    victim_placer=victim_placer,
+    room_size=8,
+    victim_placer=VictimPlacer(num_real_victims=3),        # 3 victims to save
+    lava_placer=LavaPlacer(lava_per_room=2),               # danger mode: ON 🔥
+    locked_room_placer=LockedRoomPlacer(locked_room_prob=0.5),  # 50% rooms locked 🔐
 )
 
 # Launch the mission!
-env.reset()
-gui = SAREnvGUI(env, fullscreen=False)
-gui.run()
+env.reset(seed=0)
+SAREnvGUI(env, config={"fullscreen": False}, llm_client=DummyLLMClient()).run()
+```
+
+No display? The same `env` is a regular Gymnasium environment:
+
+```python
+obs, info = env.reset(seed=0)
+obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
 ```
 
 ## ⚙️ Configuration
 
-| Parameter          | Description              | Default |
-| ------------------ | ------------------------ | ------- |
-| `num_rows`         | Building height (rooms)  | 3       |
-| `num_cols`         | Building width (rooms)   | 3       |
-| `room_size`        | Tiles per room           | 8       |
-| `add_lava`         | Enable lava hazards 🔥    | True    |
-| `lava_per_room`    | Lava tiles per room      | 0       |
-| `locked_room_prob` | Chance of locked doors 🔐 | 0.5     |
-| `agent_pov`        | First-person view 👁️      | False   |
+| Parameter                                 | Where                | Description                    | Default |
+| ----------------------------------------- | -------------------- | ------------------------------ | ------- |
+| `num_rows`, `num_cols`                    | `build_sar_env`      | Building size (rooms)          | 5, 5    |
+| `room_size`                               | `build_sar_env`      | Tiles per room                 | 14      |
+| `num_real_victims`                        | `VictimPlacer`       | Victims to rescue              | 1       |
+| `lava_per_room`                           | `LavaPlacer`         | Lava tiles per room 🔥          | 0       |
+| `locked_room_prob`                        | `LockedRoomPlacer`   | Chance a room is locked 🔐      | 0.35    |
+| `llm_client`                              | `SAREnvGUI`          | Advisor AI (`DummyLLMClient` = none) | -   |
 
 ## 🎮 Controls
 
@@ -124,7 +127,7 @@ src/
 ```
 
 `mosaic/` ships generic defaults (neutral rewards, neutral victim health, MiniGrid's own
-max-steps fallback) so `pip install mosaic` alone runs a working SAR episode. `experiment/`
+max-steps fallback) so `pip install ihuman-mosaic` alone runs a working SAR episode. `experiment/`
 supplies this lab's exact calibrated values on top, via the constructor injection points
 `mosaic/sar/` exposes — see `REFERENCE.md` for the full list.
 
