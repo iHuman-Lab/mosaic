@@ -7,7 +7,8 @@ Three small pieces, used by both notebooks:
 * **Recording**: ``Recorder`` pulls every LSL stream you name and saves one ``.xdf`` file
   (a minimal stand-in for LabRecorder, so a hub with no LabRecorder can still make XDF files).
 * **Analysis** : ``load_streams`` (read XDF with pyxdf), ``gaze_table``, ``marker_table``,
-  ``detect_fixations`` and a few plotting helpers.
+  ``study_tables`` (the same two tables from a study-runner recording), ``detect_fixations`` and a
+  few plotting helpers.
 """
 
 import json
@@ -35,13 +36,17 @@ class MarkerOutlet:
     """Publish events as an irregular, text-valued LSL stream (type ``Markers``)."""
 
     def __init__(self, name="HSI-Events", source_id=None):
-        info = pylsl.StreamInfo(name, "Markers", 1, pylsl.IRREGULAR_RATE, "string",
-                                source_id or f"{name}-{int(time.time())}")
+        self.source_id = source_id or f"{name}-{time.time_ns()}"      # unique, so a recorder can pick this stream out
+        info = pylsl.StreamInfo(name, "Markers", 1, pylsl.IRREGULAR_RATE, "string", self.source_id)
         self.outlet = pylsl.StreamOutlet(info)
 
     def push(self, event, **fields):
         """Send one event; extra keyword arguments are stored as JSON next to it."""
         self.outlet.push_sample([json.dumps({"event": event, **fields})])
+
+    def close(self):
+        """Take the stream off the network."""
+        self.outlet = None
 
 
 def attach_markers(commander, outlet):
@@ -88,7 +93,8 @@ class SyntheticGaze:
 
     def __init__(self, width=1280, height=800, rate=60, name="TobiiEyeTracker", seed=0):
         self.width, self.height, self.rate = width, height, rate
-        info = pylsl.StreamInfo(name, "Gaze", len(GAZE_CHANNELS), rate, "float32", "synthetic-gaze")
+        self.source_id = f"synthetic-gaze-{time.time_ns()}"
+        info = pylsl.StreamInfo(name, "Gaze", len(GAZE_CHANNELS), rate, "float32", self.source_id)
         desc = info.desc()
         desc.append_child_value("synthetic", "true")
         channels = desc.append_child("channels")
@@ -137,9 +143,11 @@ class SyntheticGaze:
         return self
 
     def stop(self):
+        """Stop the gaze and take the stream off the network."""
         self._stop.set()
         if self._thread:
             self._thread.join(timeout=1)
+        self.outlet = None
 
 
 # --------------------------------------------------------------------------------------
@@ -206,17 +214,24 @@ class XDFWriter:
 # Recorder
 # --------------------------------------------------------------------------------------
 class Recorder:
-    """Record LSL streams to one XDF file. ``Recorder(path, ["Markers", "Gaze"])`` records by stream type."""
+    """Record LSL streams to one XDF file. ``Recorder(path, ["Markers", "Gaze"])`` records by stream type.
 
-    def __init__(self, path, stream_types=("Markers", "Gaze"), wait=3.0):
+    Every stream of those types on the network is recorded, including other people's on a shared machine.
+    Pass ``source_ids`` to keep only the streams with those ids."""
+
+    def __init__(self, path, stream_types=("Markers", "Gaze"), wait=3.0, source_ids=None):
         self.path = path
         self.inlets = []
         flags = pylsl.proc_clocksync | pylsl.proc_dejitter
-        for stream_type in stream_types:
-            for info in pylsl.resolve_byprop("type", stream_type, timeout=wait):
-                inlet = pylsl.StreamInlet(info, max_buflen=360, processing_flags=flags)
-                inlet.open_stream(timeout=5)       # connect now, so no early samples are lost
-                self.inlets.append(inlet)
+        if source_ids is None:
+            found = [info for stream_type in stream_types for info in pylsl.resolve_byprop("type", stream_type, timeout=wait)]
+        else:                                      # ask for each stream by its id, so someone else's is never picked up
+            found = [info for source_id in source_ids for info in pylsl.resolve_byprop("source_id", source_id, timeout=wait)]
+            found = [info for info in found if info.type() in stream_types]
+        for info in found:
+            inlet = pylsl.StreamInlet(info, max_buflen=360, processing_flags=flags)
+            inlet.open_stream(timeout=5)           # connect now, so no early samples are lost
+            self.inlets.append(inlet)
         if not self.inlets:
             raise RuntimeError(f"No LSL streams found for types {list(stream_types)}")
         self.streams = [(inlet.info().name(), inlet.info().type()) for inlet in self.inlets]
@@ -273,6 +288,8 @@ def load_streams(path):
     streams, _ = pyxdf.load_xdf(path)
     out = {}
     for stream in streams:
+        if len(stream["time_stamps"]) == 0:        # a stream that was listed but sent nothing
+            continue
         info = stream["info"]
         desc = info["desc"][0] if isinstance(info.get("desc"), list) and info["desc"] and info["desc"][0] else {}
         labels = []
@@ -314,6 +331,61 @@ def marker_table(stream):
             row["event"] = str(sample[0])
         rows.append(row)
     return rows
+
+
+_STATE_FIELDS = ("step_count", "agent_x", "agent_y", "saved_victims", "remaining_victims", "action", "reward")
+
+
+def fullscreen_aois(screen):
+    """The three screen areas ``{name: [x, y, width, height]}`` (px) of the fullscreen study GUI.
+
+    The study runner makes the game view as tall as the screen, puts a panel half as wide beside it
+    and centres the two (``SAREnvGUI._calculate_offsets``); ``screen = (width, height)`` in pixels."""
+    width, height = screen
+    scale = min(width / (height + height // 2), 1.0)
+    game, panel = height * scale, (height // 2) * scale
+    left, top = (width - game - panel) / 2, (height - game) / 2
+    return {"game": [left, top, game, game],
+            "info": [left + game, top, panel, game / 2],
+            "chat": [left + game, top + game / 2, panel, game / 2]}
+
+
+def study_tables(streams, screen):
+    """Gaze and game tables from a study-runner recording (MOSAIC's ``experiment`` package and LabRecorder).
+
+    That file differs from the one this notebook records in two ways: the game is a ``GameState`` stream
+    (one JSON state per frame) instead of ``Markers``, and gaze is in fractions of the screen (0..1)
+    instead of pixels. Returns ``(gaze, rows)`` in the form ``gaze_table`` and ``marker_table`` give:
+    gaze in pixels of ``screen = (width, height)``, and rows with one ``session_start``, a ``state`` per
+    game step and a ``rescue`` whenever ``saved_victims`` goes up."""
+    gaze = gaze_table(streams["Gaze"])
+    gaze["x"], gaze["y"] = gaze["x"] * screen[0], gaze["y"] * screen[1]
+
+    game = streams["GameState"]
+    rows = [{"t": float(game["ts"][0]), "event": "session_start", "screen": list(screen),
+             "aois": fullscreen_aois(screen), "synthetic_gaze": False}]
+    steps = saved = None
+    for t, sample in zip(game["ts"], game["data"]):
+        state = json.loads(sample[0])
+        if state["total_steps"] != steps:
+            steps = state["total_steps"]
+            rows.append({"t": float(t), "event": "state", **{key: state[key] for key in _STATE_FIELDS}})
+        if saved is not None and state["saved_victims"] > saved:
+            rows.append({"t": float(t), "event": "rescue"})
+        saved = state["saved_victims"]
+    return gaze, rows
+
+
+def gaze_area(gaze, aois):
+    """Which area each gaze sample is in: an array of names, one per sample.
+
+    A name from ``aois`` (``{name: [x, y, width, height]}`` in px), ``"elsewhere"`` for valid gaze outside
+    them all, or ``"no data"`` where the tracker had no valid gaze. ``gaze`` is a ``gaze_table`` dict."""
+    x, y, valid = gaze["x"], gaze["y"], gaze["valid"]
+    area = np.where(valid, "elsewhere", "no data").astype(object)
+    for name, (left, top, width, height) in aois.items():
+        area[valid & (x >= left) & (x < left + width) & (y >= top) & (y < top + height)] = name
+    return area
 
 
 def detect_fixations(t, x, y, max_dispersion=40.0, min_duration=0.10):
