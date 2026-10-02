@@ -5,7 +5,11 @@
 
 It uses the same stream name, type and 9 channels as MOSAIC's TobiiEyeTracker, so recordings from
 either source are read by the same code in the notebooks. Leave it running, start LabRecorder, then
-run your task (``shasta_gui_lsl.py`` or MOSAIC). NOT TESTED against real hardware in this repo.
+run your task (``shasta_gui_lsl.py`` or MOSAIC). Gaze is published in pixels of the screen size you give.
+
+Tested with a Tobii Pro Spark on Ubuntu 22.04: the stream appears at 60 Hz and Step 8 of
+``02_mosaic_human_ai.ipynb`` records it with ``eye_tracker.source: live``. It does not calibrate; the
+tracker uses whatever calibration it already holds.
 """
 
 import argparse

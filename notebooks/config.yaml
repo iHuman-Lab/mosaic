@@ -15,7 +15,7 @@ game:
   screen_size: 640        # pixels, height of the game view
   tile_size: 32           # pixels per tile in the rendered image
   max_time: 5             # minutes shown on the participant's clock
-  prompt_type: sparse     # sparse or detailed: how much the AI advisor's prompt contains
+  prompt_type: sparse     # sparse or detailed: how much the AI teammate's prompt contains
   llm_nudge_interval: 50  # steps between automatic requests for AI guidance
   fullscreen: false
 

@@ -66,6 +66,8 @@ class SARGameTrial(LSLTrial):
 
     def initialize(self) -> None:
         config = self.parameters
+        os.environ["SDL_VIDEO_FULLSCREEN_DISPLAY"] = str(config.get("display", 0))
+        pygame.display.init()
         screen_height = pygame.display.Info().current_h
         env = build_sar_env(
             screen_size=screen_height,
@@ -88,7 +90,6 @@ class SARGameTrial(LSLTrial):
             ),
             deplete_amount_fn=lambda max_steps: 17.5 / max_steps,
         )
-        os.environ["SDL_VIDEO_FULLSCREEN_DISPLAY"] = str(config.get("display", 0))
         provider = config.get("provider", "openai")
         llm_client = build_llm_client(provider=provider, model=config.get("model"))
         self.gui = SAREnvGUI(env, config=config, llm_client=llm_client)
@@ -223,5 +224,36 @@ class SARGame(Task):
                 lsl_stream=self.lsl_stream,
                 after_trial_fn=lambda: _show_break_screen(display, recalibrate),
             )
+        pygame.quit()
+        return []
+
+
+class SARGameDemo(SARGame):
+    """One keyless trial of the SAR game, for demonstrations.
+
+    Same LSL stream and trial as ``SARGame``, but a single mission with the
+    ``dummy`` teammate, so it needs no API key and has no break screen.
+    """
+
+    def __init__(self, config: dict[str, Any]):
+        Task.__init__(self, config)
+        block = Block("sar_game_demo_block")
+        block.add_trial(
+            SARGameTrial(
+                "trial_demo",
+                {
+                    **config,
+                    "prompt_type": "sparse",
+                    "provider": "dummy",
+                    "model": "dummy",
+                },
+            ),
+            order=1,
+        )
+        self.add_block(block)
+
+    def execute(self, order: str = "predefined") -> list:
+        for block in self.blocks:
+            block.execute(order, lsl_stream=self.lsl_stream)
         pygame.quit()
         return []

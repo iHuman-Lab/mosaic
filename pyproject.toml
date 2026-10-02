@@ -8,14 +8,15 @@ version = "0.1.0"
 description = "A modular platform for Human-AI collaboration research"
 readme = "README.md"
 license = { file = "LICENSE" }
-authors = [{ name = "Elahe Oveisi" }]
+authors = [{ name = "iHuman Lab" }]
 requires-python = ">=3.8"
 dependencies = [
     "minigrid",
-    "pygame",
+    "pygame-ce>=2.5.2",
     "pygame_gui",
     "numpy",
     "pandas",
+    "tabulate",
     "pyyaml",
     "python-dotenv",
 ]
