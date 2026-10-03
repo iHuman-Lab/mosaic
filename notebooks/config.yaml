@@ -25,3 +25,10 @@ session:                  # the recorded session in Step 8
 
 eye_tracker:
   source: synthetic       # synthetic: made-up gaze for a demo. live: record the Gaze stream of a real Tobii (see tobii_to_lsl.py)
+
+challenge:                # Step 9: the same level for everyone
+  seed: 7                 # which level
+  seconds: 120            # how long a game lasts
+
+leaderboard:
+  dir: /srv/tutorial/smc  # the shared folder on the server: scores go in <dir>/mosaic. If it cannot be written, ./scores is used
