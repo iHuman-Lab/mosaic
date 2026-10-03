@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""Give the calling user their own copy of the tutorials.
+
+    smc-sync             copy what is missing, and refresh the helper .py files (they are not meant to be edited)
+    smc-sync --reset X   start X (mosaic or shasta) again: the current copy is kept as X.backup-<time>
+
+The master copies are read-only, in <root>/master/. Notebooks and config files are copied once, so a user's edits are never overwritten.
+"""
+import os
+import pwd
+import shutil
+import sys
+import time
+from pathlib import Path
+
+ROOT = Path(os.environ.get("SMC_ROOT", "/home/smc-tutorial"))
+MASTER = ROOT / "master"
+HOME = Path(os.environ.get("SMC_HOME") or pwd.getpwuid(os.getuid()).pw_dir)
+SKIP = {".ipynb_checkpoints", "__pycache__"}
+
+
+def copy(name):
+    source, target_dir = MASTER / name, HOME / name
+    for path in source.rglob("*"):
+        parts = path.relative_to(source).parts
+        if path.is_dir() or SKIP & set(parts):
+            continue
+        target = target_dir.joinpath(*parts)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        helper = path.suffix == ".py"
+        if not target.exists() or (helper and target.read_bytes() != path.read_bytes()):
+            shutil.copyfile(path, target)
+            target.chmod(0o644)
+
+
+def main(args):
+    names = sorted(p.name for p in MASTER.iterdir() if p.is_dir()) if MASTER.is_dir() else []
+    if args[:1] == ["--reset"]:
+        if len(args) != 2 or args[1] not in names:
+            sys.exit(f"usage: smc-sync --reset {'|'.join(names)}")
+        current = HOME / args[1]
+        if current.exists():
+            current.rename(HOME / f"{args[1]}.backup-{time.strftime('%Y%m%d-%H%M%S')}")
+            print(f"Your old {args[1]} folder is kept as {args[1]}.backup-...")
+        names = [args[1]]
+    for name in names:
+        copy(name)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

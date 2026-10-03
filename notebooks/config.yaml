@@ -31,4 +31,4 @@ challenge:                # Step 9: the same level for everyone
   seconds: 120            # how long a game lasts
 
 leaderboard:
-  dir: /srv/tutorial/smc  # the shared folder on the server: scores go in <dir>/mosaic. If it cannot be written, ./scores is used
+  dir: /home/smc-tutorial/scores  # the shared folder on the server: scores go in <dir>/mosaic. If it cannot be written, ./scores is used
