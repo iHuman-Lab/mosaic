@@ -3,31 +3,34 @@ title: "MOSAIC: A Modular Search-and-Rescue Testbed for Human-AI Collaboration R
 tags:
   - Python
   - human-AI collaboration
+  - human-AI interaction
   - human-AI teaming
+  - human-LLM collaboration
+  - large language models
   - search and rescue
   - reinforcement learning
   - Gymnasium
   - MiniGrid
+  - human factors
+  - eye tracking
+  - Lab Streaming Layer
   - human-subjects experimentation
 authors:
   - name: Bennett Dogbey
-    orcid: 0000-0000-0000-0000 # TODO: real ORCID
-    corresponding: true # TODO: confirm corresponding author
+    orcid: 0009-0004-0980-1397
     affiliation: 1
   - name: Elahe Oveisi
-    orcid: 0000-0000-0000-0000 # TODO: real ORCID
+    orcid: 0000-0002-6313-3260
     affiliation: 1
   - name: Hemanth Manjunatha
-    orcid: 0000-0000-0000-0000 # TODO: real ORCID
+    orcid: 0000-0003-2207-8960
+    corresponding: true
     affiliation: 1
 affiliations:
-  - name: TODO institution, department, city, country
-    index: 1
-  
-  - name: TODO institution, department, city, country
+  - name: Department of Mechanical and Aerospace Engineering, Oklahoma State University, Stillwater, Oklahoma, USA
     index: 1
 
-date: 1 September 2026 # TODO: update to the actual submission date
+date: 7 November 2026
 bibliography: paper.bib
 ---
 
@@ -41,7 +44,7 @@ MOSAIC records structured information about the environment, participant actions
 
 Research on human-AI interaction requires tasks that simulate realistic challenges such as time pressure, incomplete information, and tangible consequences for errors, while maintaining enough control for consistent replication across participants. Simply measuring the final task score is insufficient; researchers need detailed data on the sequence of participant actions, the timing and content of AI advice, and aligned physiological signals.
 
-Currently, assembling this experimental setup is a labor-intensive process for each research. It involves integrating multiple components such as simulators, participant interfaces, AI modules, sensor synchronization, logging, and replay tools that were often developed independently without a shared timing framework. This leads to substantial, often redundant framework that is tightly coupled to specific study designs, limiting reusability.
+Assembling this experimental setup is a labor-intensive process for each study. It involves integrating multiple components such as simulators, participant interfaces, AI modules, sensor synchronization, logging, and replay tools that were often developed independently without a shared timing framework. This leads to substantial, redundant engineering effort that is tightly coupled to specific study designs, limiting reusability.
 
 MOSAIC provides an integrated, Gymnasium-compatible framework for human-AI teaming, human factors, and reinforcement learning research. It features a configurable search-and-rescue task, operator interface, and modular advisory channel, with consistent logging and replay tied to environment observations. Task parameters such as reward scales, pacing, hazard density, and sensor settings are injected at runtime to maintain neutrality and adaptability.
 
@@ -53,9 +56,7 @@ Simulation testbeds provide controlled and flexible environments for studying hu
 Other platforms support specific aspects of human–AI interaction and human-subject experimentation. Overcooked-AI provides a cooperative environment in which humans and AI agents work together toward shared objectives, making it useful for studying human–AI coordination [@carroll2019utility]. More general human–agent teaming frameworks, such as MATRX, support the rapid development of collaborative tasks and have also been used to implement urban search-and-rescue scenarios [@matrx_2023], [@schoonderwoerd2022design]. Other tools address different parts of the experimental workflow. PsychoPy [@peirce2019psychopy2], for example, is widely used to design controlled behavioral and cognitive experiments, while Lab Streaming Layer (LSL) [@kothe2025lab] supports the synchronization of multimodal data streams, including eye-tracking and EEG. Although these platforms provide important foundations, their capabilities are generally distributed across separate tools, with different systems supporting task simulation, human–AI coordination, experimental control, or physiological data synchronization. MOSAIC brings these elements together within a single configurable framework by combining a search-and-rescue task environment, human interaction, AI and LLM assistance, experimental manipulation, behavioral and performance logging, and synchronized physiological sensing. This integrated structure allows researchers to relate specific task events, human actions, and AI interactions to behavioral and physiological responses, supporting the study of decision-making, situation awareness, workload, visual attention, trust, and reliance on AI within the same experimental environment.
  
  
-MOSAIC builds on MiniGrid as its lightweight and configurable simulation foundation while extending it to support a broader human–AI experimental workflow. Human–AI studies often need more than a simple task environment alone. Researchers may need an interactive human interface, configurable experimental manipulations, AI or LLM-based assistance, behavioral and performance logging, and synchronized physiological measurements. These capabilities are important for investigating processes such as decision-making, situation awareness, mental workload, visual attention, trust, and reliance on AI. Although many of these functions are available through existing tools, integrating them into a single experiment and synchronizing physiological signals with task events, human actions, and AI interactions often requires substantial study-specific implementation.
- 
-MOSAIC addresses this gap by combining a configurable search-and-rescue grid environment, human interaction, integrable AI and LLM assistance, task and behavioral logging, and LSL-based synchronization with eye-tracking, EEG, and other physiological measurements within a common framework. This integration let the researchers to evaluate cognitive and behavioral processes together with task performance and physiological responses while maintaining systematic control over experimental conditions.
+MOSAIC builds on MiniGrid as its lightweight simulation foundation and extends it into a complete human–AI experimental workflow. It combines a configurable search-and-rescue grid environment, a human interface, pluggable AI and LLM assistance, task and behavioral logging, and LSL-based synchronization with eye-tracking, EEG, and other physiological measurements. This integration lets researchers evaluate cognitive and behavioral processes together with task performance and physiological responses while maintaining systematic control over experimental conditions.
 
 
 # Software design
@@ -109,28 +110,8 @@ any claim about it:
   - tests/
 -->
 
-<!--
-RESERVED - one optional architecture figure. NOT CREATED YET.
-
-Intended content:
-
-    Human / AI
-        |
-    GUI and advisory interface
-        |
-    MOSAIC SAR environment
-        |
-    Observations, events and measurements
-        |
-    Logging, sensing and replay
-
-When the figure exists, place it in paper/figures/ and reference it as:
-    ![Caption.\label{fig:architecture}](figures/architecture.png)
--->
-
 # Research impact statement
-MOSAIC lowers the engineering barrier to conducting controlled human–LLM (Large Language Model) teaming research by offering an integrated, reusable experimental platform. At its core is a dynamic, multi-room search-and-rescue task where human operators navigate environments, unlock doors, avoid hazards, and distinguish real victims from fake under time pressure and uncertainty. Built to standard reinforcement learning specifications via a Gymnasium-compatible interface, MOSAIC allows AI advisory agents to interact seamlessly within the simulation environment alongside human subjects.  
-Medium
+MOSAIC lowers the engineering barrier to conducting controlled human–LLM (Large Language Model) teaming research by offering an integrated, reusable experimental platform. At its core is a dynamic, multi-room search-and-rescue task where human operators navigate environments, unlock doors, avoid hazards, and distinguish real victims from fake under time pressure and uncertainty. Built to standard reinforcement learning specifications via a Gymnasium-compatible interface, MOSAIC allows AI advisory agents to interact seamlessly within the simulation environment alongside human subjects.
 
 <!--
 OUTLINE - 150-250 words. Do not draft yet.
@@ -150,32 +131,11 @@ or results.
 
 # AI usage disclosure
 
-<!--
-OUTLINE - 60-100 words. Do not draft yet.
-
-AWAITING AUTHOR CONFIRMATION of:
-  - Which generative-AI tools were used in the software, the documentation, or
-    the manuscript.
-  - What those tools contributed.
-  - What the human authors reviewed and decided.
-  - How tests, code review, and manual verification checked correctness.
-
-Do not write the final disclosure until the authors confirm these facts.
--->
+Generative AI (Claude Code, Anthropic) was used to assist with implementing the MOSAIC source code, primarily for routine implementation work, and to improve the writing of the documentation and this manuscript. The authors designed and planned the software, including its architecture, abstractions, component boundaries, and public interfaces, and used the AI tool to carry out those designs in code. The ideas, claims, and sentences in the manuscript are the authors' own; AI was used only to refine their wording. All AI-generated code was reviewed by the authors, who take full responsibility for the software, its documentation, and this manuscript. Correctness is checked through the project's automated `pytest` test suite, run in continuous integration, and manual testing of the environment and participant interface.
 
 # Acknowledgements
 
-<!--
-OUTLINE - 40-80 words. Do not draft yet.
-
-AWAITING AUTHOR CONFIRMATION of:
-  - Funding agencies and grant numbers.
-  - Institutional and laboratory support.
-  - Non-author contributors.
-  - Equipment support.
-
-Do not invent acknowledgements, funders, or grant numbers.
--->
+This work received no external funding.
 
 # References
 

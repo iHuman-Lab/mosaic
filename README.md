@@ -9,7 +9,9 @@ A grid-based Search and Rescue simulation platform for studying human–AI teami
 Built on top of [MiniGrid](https://github.com/Farama-Foundation/Minigrid) 🎮
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Tests](https://github.com/iHuman-Lab/mosaic/actions/workflows/tests.yml/badge.svg)](https://github.com/iHuman-Lab/mosaic/actions/workflows/tests.yml)
+[![Docs](https://img.shields.io/badge/docs-mkdocs-blue.svg)](https://ihuman-lab.github.io/mosaic)
 [![MiniGrid](https://img.shields.io/badge/built%20on-MiniGrid-green.svg)](https://github.com/Farama-Foundation/Minigrid)
 
 </div>
@@ -133,7 +135,17 @@ supplies this lab's exact calibrated values on top, via the constructor injectio
 
 ## 🤝 Contributing
 
-Found a bug? Have an idea? PRs are welcome!
+Found a bug? Have an idea? PRs are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) and our
+[Code of Conduct](CODE_OF_CONDUCT.md).
+
+- **Report bugs / request features:** [GitHub Issues](https://github.com/iHuman-Lab/mosaic/issues)
+- **Get help:** open an issue or discussion on the repository
+- **Documentation:** <https://ihuman-lab.github.io/mosaic>
+
+## 📚 Citing MOSAIC
+
+If you use MOSAIC in your research, please cite it using [CITATION.cff](CITATION.cff)
+(GitHub's "Cite this repository" button). A JOSS paper is in preparation (`paper/paper.md`).
 
 ## 📄 License
 
