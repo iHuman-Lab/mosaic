@@ -35,103 +35,61 @@ bibliography: paper.bib
 ---
 
 # Summary
+Research on human-AI collaboration typically requires controlled environments that are complex enough to necessitate meaningful decisions and repeatable enough to facilitate systematic experimentation [cite]. MOSAIC is an open-source, grid-based, search and rescue environment that was developed for this purpose. The MOSAIC simulation framework was built upon MiniGrid and Gymnasium [@chevalier2023minigrid;@towers2026gymnasium]. A participant acts as a first responder who has to find and rescue as many victims as possible. The mission has a time limit and participants may not always be able to find every victim. During the missions, a LLM agent offers recommendations based on the current state of the task.
 
-Research on human–AI collaboration requires controlled environments that are complex enough to produce meaningful decisions yet repeatable enough to support systematic experimentation. MOSAIC is an open-source, grid-based search-and-rescue platform designed for this purpose. Built on MiniGrid and Gymnasium [@chevalier2023minigrid; @towers2026gymnasium], it places a human participant in a time-constrained, multi-room mission involving real victims, decoys, locked doors, keys, and environmental hazards. During the mission, an AI assistant can provide natural-language recommendations based on the current task state, while the participant retains responsibility for deciding whether and how to follow that advice.
-
-MOSAIC records structured information about the environment, participant actions, mission progress, and interactions with the AI assistant. Researchers can vary the environment layout, victim and hazard placement, visual perspective, reward structure, AI client, prompting method, and experimental pacing without rewriting the underlying task. The software separates reusable search-and-rescue mechanics from study-specific configuration and provides an experiment layer for integrating participant measures, synchronized sensing, and session replay. MOSAIC therefore supports reproducible investigations of how people seek, interpret, trust, and act on AI assistance under workload, uncertainty, and time pressure.
+MOSAIC can record structured information about the environment, participant actions, mission progress, and interactions with the LLM assistant. Researchers are free to vary the environment (layout, placement of victims and hazards, visual perspective, reward structure, AI client, prompts, and pacing) without needing to change the underlying task. The software separates the reusable search and rescue mechanics from study-specific configuration and provides an experiment layer for integrating participant measures, synchronizing sensing, and replaying experimental sessions. We thus hope to enable reproducible research into how people seek, interpret, trust, and act on LLM assistance amid workload, uncertainty, and time pressure through MOSAIC.
 
 # Statement of need
+Large language models (LLMs) have greatly accelerated the rise of AI-assisted decision making [cite]. People increasingly ask LLMs for advice on important decisions, often in time-pressured settings and under incomplete information [cite]. This raises two questions: how do people interact with an LLM when making decisions, and how should an LLM be designed so that its advice fits the way people make decisions? This is an alignment problem [cite], for an LLM that is accurate but ignored, overtrusted, or difficult to verify does not help the person it is supposed to support [cite].
 
-Research on human-AI interaction requires tasks that simulate realistic challenges such as time pressure, incomplete information, and tangible consequences for errors, while maintaining enough control for consistent replication across participants. Simply measuring the final task score is insufficient; researchers need detailed data on the sequence of participant actions, the timing and content of AI advice, and aligned physiological signals.
+There are a number of different aspects to the human-machine alignment: trust, reliance, situation awareness [@taylor1990situational], workload [@hart1988nasa], or how to adapt advice to a particular person. Physiological computing, which uses signals such as eye movements and EEG to infer a person's state [cite], offers one way to do the last of these: an LLM could adapt its advice to the person's trust, workload, or attention. All of these require a specific experimental setup: a realistic task, consistent between participants (for the ability to compare), and detailed information about the human actions, LLM output, their synchronicity, and human physiological reactivity to LLM advice. All of these factors cannot be measured by the human task score alone. In practice, each experiment would have to build these facilities from scratch. While there are individual tools (simulation, interfaces, LLM modules, sensors synchronization, replay) for each of the pieces, these are developed independently of each other, without sychronization capabilities, tailored to a specific experiment setup.
 
-Assembling this experimental setup is a labor-intensive process for each study. It involves integrating multiple components such as simulators, participant interfaces, AI modules, sensor synchronization, logging, and replay tools that were often developed independently without a shared timing framework. This leads to substantial, redundant engineering effort that is tightly coupled to specific study designs, limiting reusability.
-
-MOSAIC provides an integrated, Gymnasium-compatible framework for human-AI teaming, human factors, and reinforcement learning research. It features a configurable search-and-rescue task, operator interface, and modular advisory channel, with consistent logging and replay tied to environment observations. Task parameters such as reward scales, pacing, hazard density, and sensor settings are injected at runtime to maintain neutrality and adaptability.
-
-By separating core task mechanics from experiment layers and supporting replaceable components, MOSAIC enables researchers to manipulate conditions while preserving a consistent task foundation, facilitating rigorous study of AI-assisted decision-making under realistic constraints.
+MOSAIC is a structured platform for this work. It is a Gymnasium-compatible search and rescue task with an operator interface, a replaceable LLM advisory channel, and logging and replay tied to the environment's observations. Reward scales, pacing, hazard density, and sensor settings are set at runtime, so researchers can change a study's conditions without changing the task.
 
 # State of the field
-Simulation testbeds provide controlled and flexible environments for studying human–AI interaction by allowing researchers to manipulate task conditions, reproduce experimental scenarios, and adapt task parameters to different research questions. Several open-source platforms support different parts of this research. MiniGrid [@chevalier2023minigrid] provides lightweight and configurable 2D grid-world environments for reinforcement learning and goal-oriented tasks. PettingZoo [@terry2021pettingzoo] offers a standardized framework for multi-agent reinforcement learning, while Unity ML-Agents [@juliani2018unity] supports the development and training of intelligent agents in configurable 3D environments. More complex embodied-AI platforms, such as AI2-THOR [@kolve2017ai2] and Habitat [@savva2019habitat], provide interactive 3D environments for studying navigation, perception, object interaction, and agent decision-making. Although these platforms offer flexible foundations for AI research, their main focus is generally on agent training, multi-agent learning, or embodied-agent performance.
- 
-Other platforms support specific aspects of human–AI interaction and human-subject experimentation. Overcooked-AI provides a cooperative environment in which humans and AI agents work together toward shared objectives, making it useful for studying human–AI coordination [@carroll2019utility]. More general human–agent teaming frameworks, such as MATRX, support the rapid development of collaborative tasks and have also been used to implement urban search-and-rescue scenarios [@matrx_2023], [@schoonderwoerd2022design]. Other tools address different parts of the experimental workflow. PsychoPy [@peirce2019psychopy2], for example, is widely used to design controlled behavioral and cognitive experiments, while Lab Streaming Layer (LSL) [@kothe2025lab] supports the synchronization of multimodal data streams, including eye-tracking and EEG. Although these platforms provide important foundations, their capabilities are generally distributed across separate tools, with different systems supporting task simulation, human–AI coordination, experimental control, or physiological data synchronization. MOSAIC brings these elements together within a single configurable framework by combining a search-and-rescue task environment, human interaction, AI and LLM assistance, experimental manipulation, behavioral and performance logging, and synchronized physiological sensing. This integrated structure allows researchers to relate specific task events, human actions, and AI interactions to behavioral and physiological responses, supporting the study of decision-making, situation awareness, workload, visual attention, trust, and reliance on AI within the same experimental environment.
- 
- 
-MOSAIC builds on MiniGrid as its lightweight simulation foundation and extends it into a complete human–AI experimental workflow. It combines a configurable search-and-rescue grid environment, a human interface, pluggable AI and LLM assistance, task and behavioral logging, and LSL-based synchronization with eye-tracking, EEG, and other physiological measurements. This integration lets researchers evaluate cognitive and behavioral processes together with task performance and physiological responses while maintaining systematic control over experimental conditions.
+Several open-source platforms exist to facilitate each aspect of human-AI interaction. Platforms for the learning aspect include MiniGrid [@chevalier2023minigrid], PettingZoo [@terry2021pettingzoo], Unity ML-Agents [@juliani2018unity], AI2-THOR [@kolve2017ai2], and Habitat [@savva2019habitat]. These enable agents to learn and be evaluated in grid, multi-agent and 3D embodied environments, but mostly do not include a human participant. Another set of tools exists to facilitate the human aspect.
 
+On the human side, Overcooked-AI is a cooperative environment for human and AI agents[@carroll2019utility]. The Human-Agent Teaming Rapid Experimentation software (MATRX) simulates human-agent teams and has been utilized for urban search and rescue [@matrx2023;@schoonderwoerd2022design]. PsychoPy is used to design and run behavioral experiments [@peirce2019psychopy2], and the Lab Streaming Layer (LSL) [@kothe2025lab] synchronizes various data streams, such as eye tracking data and EEG data. Most of these tools do not offer a Gymnasium API for the AI agents to learn through [cite], and one must wire up the human side and the learning side by hand. We designed MOSAIC to address both sides.
+
+MOSAIC builds upon MiniGrid, so that the same search and rescue task can be used as a Gymnasium learning environment for the agents or as a task for human participants. To support the human participants, we also develop a human interface, pluggable LLM assistance, behavioral logging, and LSL-based synchronization with eye-tracking, electroencephalography (EEG) recording and other possible physiological measures.
 
 # Software design
-MOSAIC was designed to support three uses of the same Search and Rescue task: programmatic interaction by an artificial agent, real-time interaction by a human participant, and integration into controlled experimental protocols. Combining these concerns in a single application would make study-specific changes—such as reward calibration, victim placement, or AI-provider selection—difficult to separate from the underlying task. MOSAIC therefore defines a stable environment core and composes human-facing and study-specific behavior around it.
+MOSAIC has three design goals. The same search and rescue task must serve an agent playing through code, a human playing in real time, and a researcher running a controlled experiment. Study details such as rewards and victim placement must change without touching the task. And everything must run without a model provider or sensor hardware. To meet them, MOSAIC is split into an installable `mosaic` package, which holds the task, and an `experiment` layer, which holds one study's settings (\autoref{fig:architecture}). The components are:
 
-The core builds on MiniGrid and retains Gymnasium’s `reset()` and `step()` interaction model. The environment contains the mission lifecycle and action dispatch, while variable behavior is delegated to configurable components. Placement strategies determine the distribution of victims, hazards, and locked rooms; an action component implements rescue outcomes; an observation processor constructs research-relevant state; and a camera strategy determines the participant’s visible region. This requires more explicit configuration than a fixed environment, but allows layout, visibility, rewards, and task difficulty to be manipulated independently while preserving the task’s action semantics.
+| Component             | What it does                                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Environment           | Runs the mission. It is built on MiniGrid and keeps Gymnasium's `reset()` and `step()`.                       |
+| Placers               | Decide where victims, lava, locked rooms, and keys go.                                                        |
+| Rescue action         | Decides what happens when a victim is picked up, and the reward.                                              |
+| Observation processor | Builds the game state: the map, the agent's position, mission progress, and victim health.                    |
+| Camera                | Decides which part of the map the participant sees.                                                           |
+| Participant interface | Shows the map, mission information, LLM advice, and screen-edge feedback, and turns key presses into actions. |
+| LLM client            | Sends text to an LLM and returns text. An offline dummy client is the default.                                |
+| `experiment` layer    | Adds one study's pacing, rewards, placers, LLM providers, eye tracking, LSL recording, and replay.            |
 
-MOSAIC distinguishes between visual presentation and structured research state. A camera strategy produces the RGB frame displayed in the game viewport. Separately, the observation processor produces an encoded grid together with agent pose, mission progress, victim health, and camera bounds. This structured representation is used by the information panel, AI-advisory pipeline, trial logger, and replay utility. Outcomes such as `victim_rescued`, `wrong_victim`, `victim_died`, and `mission_complete` are communicated as semantic events through the step information rather than inferred from reward magnitude. This permits reward values to change between studies without requiring the interface or data-processing tools to reinterpret their meaning.
+Each component can be replaced without changing the others, and each has a neutral default, so a study configures only what it needs. For example, the reusable rescue action rewards \(+1\), \(-1\), and \(-2\) for a rescued, wrong, and dead victim, and the study uses \(+10\), \(-10\), and \(-20\) without changing that code. The cost is more setup than a fixed environment. Two further choices concern the data.
 
-A second design decision separates reusable software from experimental calibration. The installable `mosaic` package contains the environment, neutral placement and reward defaults, interchangeable cameras, participant interface, and AI-advisory contract. The repository’s `experiment` layer is excluded from the distributed package and composes the core with the present study’s pacing, victim-health dynamics, hazard placement, trial sequence, sensing, and provider configuration. For example, the reusable rescue action assigns rewards of \(+1\), \(-1\), and \(-2\) to its three pickup outcomes, whereas the study configures \(+10\), \(-10\), and \(-20\) without modifying the reusable action logic. The additional composition required at study startup makes these assumptions explicit and prevents one protocol’s calibration from becoming the default for subsequent research.
+What the participant sees on screen is kept separate from the state that is recorded. Every step also reports what happened, such as `victim_rescued` or `wrong_victim`, instead of leaving it to be guessed from the reward. This lets rewards change between studies without breaking the interface or the analysis. The LLM works from the same recorded state.
 
-MOSAIC favors composition and constructor injection over a deep hierarchy of experiment-specific subclasses. Placers, rescue behavior, observation processing, cameras, AI clients, and GUI components can be replaced independently, while neutral implementations provide a working default configuration. Inheritance is retained when behavior must occur at a precise point in the environment lifecycle. The study-specific environment, for example, applies visibility-dependent victim-health depletion after executing an action but before constructing the returned observation. Restricting inheritance to such ordering-sensitive behavior keeps most experimental variation localized and independently testable.
+The LLM client knows nothing about the task or the provider, so any provider can be used. Advice is requested in a background thread, so the game keeps running while the LLM answers. The cost is that only text goes in and out, so provider features beyond text are not available.
 
-The participant interface is an adapter over the same action and state interfaces used by programmatic agents. Keyboard input is translated into environment actions, while the GUI combines the RGB frame with mission information, advisory messages, and event-driven visual feedback. AI advice is accessed through a narrow `LLMClient` contract that accepts text and returns text. Prompt construction and response processing are separate configurable operations, and provider-specific adapters remain in the experiment layer. The reusable package supplies an offline dummy client, allowing the environment and interface to operate without credentials or network access. Advice requests run in a background thread over a copied observation, preserving a consistent state snapshot while the rendering loop continues.
-
-The experiment layer records structured game-state snapshots through Lab Streaming Layer alongside the eye-tracking stream. The replay utility reconstructs the game from the recorded grid states rather than re-executing the environment. Recording complete state requires more storage than recording actions alone, but avoids relying on exact regeneration of human choices or external model responses. The same component boundaries support headless tests using injected clients, components, and clocks, allowing task mechanics, advisory integration, and visual feedback to be evaluated without a model provider or specialized sensing hardware.
+The experiment layer records one JSON game state per frame through LSL, using the external `ixp` package, next to a Tobii eye-tracking stream. LSL puts all streams on a shared clock, so they can be aligned afterwards. The replay utility redraws the game from these states instead of running it again, at the cost of storing a full state for every frame. Over 100 `pytest` tests run without a network, a provider, or sensor hardware.
 
 ![Overview of MOSAIC's layered architecture. The installable `mosaic`
 package defines the SAR task, participant interface, structured state and
-event boundary, and provider-independent AI interface. The study-specific
+event boundary, and provider-independent LLM interface. The study-specific
 `experiment` layer supplies calibrated implementations, provider adapters,
 instrumentation, and state-based replay.
 \label{fig:architecture}](figures/mosaic-architecture-overview.svg){width="100%"}
 
-<!--
-OUTLINE - 300-400 words. Do not draft yet.
-
-Organize the discussion around design decisions, not a module tour:
-
-   1. Reusable Gymnasium/MiniGrid environment core.
-   2. SAR mechanics and observations.
-   3. Separation between reusable `mosaic` code and study-specific `experiment`
-      code.
-   4. Constructor-injected study components and neutral defaults.
-   5. Human interaction through the GUI.
-   6. Provider-independent AI-advisory interface.
-   7. Experimental logging, sensing, and replay.
-   8. Composition versus inheritance.
-   9. Reusability versus study-specific calibration.
-  1.  Reproducibility and testability.
-
-Grounding pointers for the drafter - verify each against the code before making
-any claim about it:
-  - src/mosaic/sar/env.py, src/mosaic/sar/observations.py, src/mosaic/sar/actions.py
-  - src/mosaic/core/level.py, src/mosaic/core/camera.py, src/mosaic/core/placers.py
-  - src/mosaic/gui/main.py (SAREnvGUI), src/mosaic/gui/chat.py,
-    src/mosaic/gui/feedback.py
-  - src/mosaic/llm/client.py, src/mosaic/llm/parser.py
-  - src/experiment/experiment.py, src/experiment/replay.py
-  - src/experiment/sensors/eye_tracker/
-  - tests/
--->
-
 # Research impact statement
-MOSAIC lowers the engineering barrier to conducting controlled human–LLM (Large Language Model) teaming research by offering an integrated, reusable experimental platform. At its core is a dynamic, multi-room search-and-rescue task where human operators navigate environments, unlock doors, avoid hazards, and distinguish real victims from fake under time pressure and uncertainty. Built to standard reinforcement learning specifications via a Gymnasium-compatible interface, MOSAIC allows AI advisory agents to interact seamlessly within the simulation environment alongside human subjects.
+MOSAIC has been used for human-LLM teaming studies in search and rescue. In a study accepted to the IEEE International Conference on Systems, Man, and Cybernetics (SMC) 2026 and available as a preprint [@oveisi2026llm], participants completed missions under two LLM-guided conditions and a no-LLM baseline while their eye movements were recorded. LLM guidance improved task efficiency and it shifted visual attention toward the chat interface. Novices relied passively on the LLM, while experts kept scanning the environment to check its advice. A second on-going study [@oveisillm] uses MOSAIC's synchronized physiological monitoring to examine how LLM-mediated communication affects physiological responses.
 
-<!--
-OUTLINE - 150-250 words. Do not draft yet.
-
-AWAITING AUTHOR CONFIRMATION. Request verified evidence only:
-  - Completed or ongoing studies that used MOSAIC.
-  - Pilot-study use and approved participant information.
-  - Data streams actually collected and the research questions they enabled.
-  - Publications, preprints, posters, presentations, theses, or datasets.
-  - Use by collaborators or other research groups.
-  - Reproducible demonstrations or benchmarks.
-
-CONSTRAINT: projected or planned future applications are NOT evidence of impact
-and must not be presented as such. Do not invent studies, participant counts,
-or results.
--->
+We plan to use MOSAIC to study adaptive LLM assistance, trust and situation awareness in LLM-assisted decisions (including EEG signatures), and human-LLM teams as coupled dynamical systems, where reliance and advice can reinforce one another and produce instabilities. The package is documented, tested in continuous integration, and has example notebooks.
 
 # AI usage disclosure
 
-Generative AI (Claude Code, Anthropic) was used to assist with implementing the MOSAIC source code, primarily for routine implementation work, and to improve the writing of the documentation and this manuscript. The authors designed and planned the software, including its architecture, abstractions, component boundaries, and public interfaces, and used the AI tool to carry out those designs in code. The ideas, claims, and sentences in the manuscript are the authors' own; AI was used only to refine their wording. All AI-generated code was reviewed by the authors, who take full responsibility for the software, its documentation, and this manuscript. Correctness is checked through the project's automated `pytest` test suite, run in continuous integration, and manual testing of the environment and participant interface.
+We used generative AI (Claude Code, Anthropic) to help write the source code, mostly routine implementation, and to improve the wording of the documentation and this paper. We designed the software, including its architecture, abstractions, and public interfaces, and the ideas, claims, and sentences are ours. We reviewed all AI-generated code and take full responsibility for the software and this paper. Correctness is checked with the `pytest` suite, which runs in continuous integration, and with manual testing.
 
 # Acknowledgements
 
