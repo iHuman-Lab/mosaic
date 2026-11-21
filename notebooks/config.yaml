@@ -1,0 +1,34 @@
+# MOSAIC tutorial configuration, read by 02_mosaic_human_ai.ipynb
+#
+# The `game` keys have the same names as the `game:` section of configs/experiment.yaml
+# (the real study uses 5x5 rooms of 6 tiles, 12 real victims, 8 lava tiles per room and 15 minutes).
+# Here the building is smaller so that everything runs in seconds.
+# Edit a value, re-run the notebook from Step 2, and see what changes.
+
+game:
+  num_rows: 2             # rooms down
+  num_cols: 2             # rooms across
+  room_size: 8            # tiles per room side
+  num_real_victims: 2     # real victims per room
+  lava_per_room: 1        # lava tiles per room
+  locked_room_prob: 0.35  # chance that a room's door is locked (its key is hidden in another room)
+  screen_size: 640        # pixels, height of the game view
+  tile_size: 32           # pixels per tile in the rendered image
+  max_time: 5             # minutes shown on the participant's clock
+  prompt_type: sparse     # sparse or detailed: how much the AI teammate's prompt contains
+  llm_nudge_interval: 50  # steps between automatic requests for AI guidance
+  fullscreen: false
+
+session:                  # the recorded session in Step 8
+  seconds: 40
+  act_every: 10           # one action every 10 frames: about 3 actions per second
+
+eye_tracker:
+  source: synthetic       # synthetic: made-up gaze for a demo. live: record the Gaze stream of a real Tobii (see tobii_to_lsl.py)
+
+challenge:                # Step 9: the same level for everyone
+  seed: 7                 # which level
+  seconds: 120            # how long a game lasts
+
+leaderboard:
+  dir: /home/smc-tutorial/scores  # the shared folder on the server: scores go in <dir>/mosaic. If it cannot be written, ./scores is used

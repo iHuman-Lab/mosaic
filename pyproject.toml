@@ -16,7 +16,7 @@ authors = [
 requires-python = ">=3.10"
 dependencies = [
     "minigrid",
-    "pygame-ce",
+    "pygame-ce>=2.5.2",
     "pygame_gui",
     "numpy",
     "pandas",

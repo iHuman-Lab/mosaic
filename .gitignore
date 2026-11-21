@@ -8,3 +8,7 @@ results/
 build/
 local/
 site/
+
+# files the tutorial notebook writes when it runs
+notebooks/mosaic_session.xdf
+notebooks/mosaic_frame.png

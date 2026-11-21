@@ -121,9 +121,10 @@ def test_locked_rooms_hold_only_the_important_victim():
 
 def test_study_placer_assigns_calibrated_values_end_to_end():
     """Through a real episode, victims carry study values rather than the defaults."""
+    placer = LavaRiskVictimPlacer(num_real_victims=4, num_fake_victims=2)
     env = build_sar_env(
         screen_size=400,
-        victim_placer=LavaRiskVictimPlacer(num_real_victims=4, num_fake_victims=2),
+        victim_placer=placer,
         lava_placer=LavaPlacer(lava_per_room=2),
         num_rows=2,
         num_cols=2,
@@ -135,9 +136,7 @@ def test_study_placer_assigns_calibrated_values_end_to_end():
     # short-circuit and the no-lava fallback.
     placer = LavaRiskVictimPlacer()
     rates = {
-        rate
-        for tiers in placer.DEPLETE_RATES.values()
-        for rate in tiers.values()
+        rate for tiers in placer.DEPLETE_RATES.values() for rate in tiers.values()
     } | {5.0, 0.5}
     healths = set(placer.STARTING_HEALTH.values()) | {0.75, 0.90}
 
