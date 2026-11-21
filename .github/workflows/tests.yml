@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
 
@@ -34,3 +34,20 @@ jobs:
           SDL_VIDEODRIVER: dummy
           PYTHONPATH: src
         run: pytest tests/ -v
+
+  wheel-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install the built wheel in a clean environment and run the demo
+        env:
+          SDL_VIDEODRIVER: dummy
+        run: |
+          pip install build
+          python -m build --wheel
+          pip install dist/*.whl
+          cd "$RUNNER_TEMP"
+          mosaic demo

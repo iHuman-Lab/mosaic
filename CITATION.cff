@@ -1,8 +1,33 @@
 cff-version: 1.2.0
 message: "If you use MOSAIC in your research, please cite it as below."
-title: "MOSAIC: A Modular System for Adaptive Human-AI Collaboration"
+title: "MOSAIC: A Modular Search-and-Rescue Testbed for Human-AI Collaboration Research"
 type: software
 authors:
-  - name: "iHuman Lab"
+  - family-names: Dogbey
+    given-names: Bennett
+    orcid: "https://orcid.org/0009-0004-0980-1397"
+  - family-names: Oveisi
+    given-names: Elahe
+    orcid: "https://orcid.org/0000-0002-6313-3260"
+  - family-names: Manjunatha
+    given-names: Hemanth
+    orcid: "https://orcid.org/0000-0003-2207-8960"
 repository-code: "https://github.com/iHuman-Lab/mosaic"
+url: "https://ihuman-lab.github.io/mosaic"
 license: MIT
+version: "0.1.0"
+# TODO: add date-released and doi (Zenodo) after tagging the release
+keywords:
+  - human-AI collaboration
+  - human-AI interaction
+  - human-AI teaming
+  - human-LLM collaboration
+  - large language models
+  - search and rescue
+  - reinforcement learning
+  - Gymnasium
+  - MiniGrid
+  - human factors
+  - eye tracking
+  - Lab Streaming Layer
+  - human-subjects experimentation

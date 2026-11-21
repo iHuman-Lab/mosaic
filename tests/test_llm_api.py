@@ -214,7 +214,7 @@ def test_package_data_is_included_in_built_wheel(tmp_path):
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
-    wheels = list(tmp_path.glob("mosaic-*.whl"))
+    wheels = list(tmp_path.glob("ihuman_mosaic-*.whl"))
     assert wheels, "no mosaic wheel was built"
 
     with zipfile.ZipFile(wheels[0]) as zf:

@@ -3,13 +3,17 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mosaic"
+name = "ihuman-mosaic"
 version = "0.1.0"
 description = "A modular platform for Human-AI collaboration research"
 readme = "README.md"
 license = { file = "LICENSE" }
-authors = [{ name = "iHuman Lab" }]
-requires-python = ">=3.8"
+authors = [
+    { name = "Bennett Dogbey" },
+    { name = "Elahe Oveisi" },
+    { name = "Hemanth Manjunatha" },
+]
+requires-python = ">=3.10"
 dependencies = [
     "minigrid",
     "pygame-ce>=2.5.2",
@@ -20,6 +24,14 @@ dependencies = [
     "pyyaml",
     "python-dotenv",
 ]
+
+[project.urls]
+Homepage = "https://github.com/iHuman-Lab/mosaic"
+Documentation = "https://ihuman-lab.github.io/mosaic"
+Issues = "https://github.com/iHuman-Lab/mosaic/issues"
+
+[project.scripts]
+mosaic = "mosaic.cli:main"
 
 [project.optional-dependencies]
 experiment = ["llama_index"]

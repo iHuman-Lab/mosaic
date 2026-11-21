@@ -134,6 +134,7 @@ def test_study_placer_assigns_calibrated_values_end_to_end():
 
     # Every value the calibration can produce: the table, plus the "down"
     # short-circuit and the no-lava fallback.
+    placer = LavaRiskVictimPlacer()
     rates = {
         rate for tiers in placer.DEPLETE_RATES.values() for rate in tiers.values()
     } | {5.0, 0.5}
