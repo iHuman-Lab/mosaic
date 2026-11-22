@@ -56,22 +56,22 @@ MOSAIC builds upon MiniGrid, so that the same search and rescue task can be used
 # Software design
 MOSAIC has three design goals. The same search and rescue task must serve an agent playing through code, a human playing in real time, and a researcher running a controlled experiment. Study details such as rewards and victim placement must change without touching the task. And everything must run without a model provider or sensor hardware. To meet them, MOSAIC is split into an installable `mosaic` package, which holds the task, and an `experiment` layer, which holds one study's settings (\autoref{fig:architecture}). The components are:
 
-| Component             | What it does                                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Environment           | Runs the mission. It is built on MiniGrid and keeps Gymnasium's `reset()` and `step()`.                       |
-| Placers               | Decide where victims, lava, locked rooms, and keys go.                                                        |
-| Rescue action         | Decides what happens when a victim is picked up, and the reward.                                              |
-| Observation processor | Builds the game state: the map, the agent's position, mission progress, and victim health.                    |
-| Camera                | Decides which part of the map the participant sees.                                                           |
-| Participant interface | Shows the map, mission information, LLM advice, and screen-edge feedback, and turns key presses into actions. |
-| LLM client            | Sends text to an LLM and returns text. An offline dummy client is the default.                                |
-| `experiment` layer    | Adds one study's pacing, rewards, placers, LLM providers, eye tracking, LSL recording, and replay.            |
+| Component                   | What it does                                                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Environment                 | Runs the mission. It is built on MiniGrid and keeps Gymnasium's `reset()` and `step()`.                              |
+| Placers                     | Decide where victims, lava, locked rooms, and keys go.                                                               |
+| Rescue action               | Decides what happens when a victim is picked up, and the reward.                                                     |
+| Observation post-processors | Build the game state: the map, the agent's position, mission progress, and victim health. Researchers add their own. |
+| Camera                      | Decides which part of the map the participant sees.                                                                  |
+| Participant interface       | Shows the map, mission information, LLM advice, and screen-edge feedback, and turns key presses into actions.        |
+| LLM client                  | Sends text to an LLM and returns text. An offline dummy client is the default.                                       |
+| `experiment` layer          | Adds one study's pacing, rewards, placers, LLM providers, eye tracking, LSL recording, and replay.                   |
 
 Each component can be replaced without changing the others, and each has a neutral default, so a study configures only what it needs. For example, the reusable rescue action rewards \(+1\), \(-1\), and \(-2\) for a rescued, wrong, and dead victim, and the study uses \(+10\), \(-10\), and \(-20\) without changing that code. The cost is more setup than a fixed environment. Two further choices concern the data.
 
-What the participant sees on screen is kept separate from the state that is recorded. Every step also reports what happened, such as `victim_rescued` or `wrong_victim`, instead of leaving it to be guessed from the reward. This lets rewards change between studies without breaking the interface or the analysis. The LLM works from the same recorded state.
+What the participant sees on screen is kept separate from the state that is recorded. Every step also reports what happened, such as `victim_rescued` or `wrong_victim`, instead of leaving it to be guessed from the reward. This lets rewards change between studies without breaking the interface or the analysis. The LLM works from the same recorded state. Researchers add their own observations by passing more post-processors. These can add keys but never change a default one, so the recorded state keeps its meaning.
 
-The LLM client knows nothing about the task or the provider, so any provider can be used. Advice is requested in a background thread, so the game keeps running while the LLM answers. The cost is that only text goes in and out, so provider features beyond text are not available.
+The LLM client knows nothing about the task or the provider, so any provider can be used. Advice is requested in a background thread, so the game keeps running while the LLM answers. A wrapper client can keep every prompt, response, and its timing. The cost is that only text goes in and out, so provider features beyond text are not available.
 
 The experiment layer records one JSON game state per frame through LSL, using the external `ixp` package, next to a Tobii eye-tracking stream. LSL puts all streams on a shared clock, so they can be aligned afterwards. The replay utility redraws the game from these states instead of running it again, at the cost of storing a full state for every frame. Over 100 `pytest` tests run without a network, a provider, or sensor hardware.
 

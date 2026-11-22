@@ -5,11 +5,12 @@ from typing import Any
 
 import pygame
 import ujson
+from ixp.task import Block, LSLTrial, Task
+
 from mosaic.core.camera import AgentFOVCamera
 from mosaic.gui.main import SAREnvGUI
 from mosaic.sar.actions import RescueAction, RescueRewards
 from mosaic.sar.env import build_sar_env
-from ixp.task import Block, LSLTrial, Task
 
 from .llm import build_llm_client
 from .pacing import TunedPickupVictimEnv
@@ -93,8 +94,8 @@ class SARGameTrial(LSLTrial):
         llm_client = build_llm_client(provider=provider, model=config.get("model"))
         self.gui = SAREnvGUI(env, config=config, llm_client=llm_client)
         if provider != "dummy":
-            reveal = getattr(env, "show_all_victim_batteries", None)
-            hide = getattr(env, "hide_all_victim_batteries", None)
+            reveal = getattr(env, "show_all_victim_health_bars", None)
+            hide = getattr(env, "hide_all_victim_health_bars", None)
             if reveal and hide:
                 self.gui.set_advice_callbacks(on_reply=reveal, on_end=hide)
         self.gui.reset()
@@ -106,19 +107,10 @@ class SARGameTrial(LSLTrial):
         self.gui = None
 
     def read_data(self) -> list[str] | None:
-        user = self.gui.user
-        obs = user.obs
         state = {
-            **(obs if isinstance(obs, dict) else {}),
-            "action": user.last_action,
-            "reward": user.last_reward,
-            "terminated": user.terminated,
-            "truncated": user.truncated,
-            "prompt_type": user.prompt_type,
+            **self.gui.observation(),
             "llm_model": self.parameters.get("model"),
             "llm_provider": self.parameters.get("provider", "dummy"),
-            "llm_response": user.last_llm_response,
-            "total_steps": user.total_steps,
             "trial_id": self.trial_id,
         }
         return [ujson.dumps(state)]

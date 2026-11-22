@@ -126,6 +126,30 @@ def test_user_ask_llm_async_error_path():
     assert "boom" in value
 
 
+def test_user_ask_llm_async_sets_last_llm_response():
+    """The GUI only uses the async path, so the answer must be kept there too,
+    or the recorded llm_response is always None."""
+    user = User(_make_env(), llm_client=FakeLLMClient(response="advice"))
+    user.obs = user.env.reset(seed=3)[0]
+
+    user.ask_llm_async()
+    user.llm_thread.join(timeout=5)
+
+    assert user.last_llm_response == "advice"
+    assert user.observation()["llm_response"] == "advice"
+
+
+def test_user_ask_llm_async_error_keeps_the_previous_response():
+    user = User(_make_env(), llm_client=ExplodingLLMClient())
+    user.obs = user.env.reset(seed=3)[0]
+    user.last_llm_response = "earlier"
+
+    user.ask_llm_async()
+    user.llm_thread.join(timeout=5)
+
+    assert user.last_llm_response == "earlier"
+
+
 def test_user_ask_llm_no_observation_yet():
     user = User(_make_env(), llm_client=FakeLLMClient())
     assert user.obs is None

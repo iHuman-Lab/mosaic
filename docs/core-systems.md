@@ -106,31 +106,52 @@ Interchangeable camera strategies:
 Switch cameras at runtime:
 
 ```python
-env.switch_camera("edge_follow")   # or "full", "centered", "fov", "cone"
+env.switch_camera(EdgeFollowCamera())   # or FullviewCamera(), AgentCenteredCamera(), ...
 ```
 
 ## Observation encoding
 
 **Class:** `GameObservation` — `src/mosaic/sar/observations.py`
 
-Returns a dict on each step:
+Returns a dict from `reset()` and each `step()`:
 
 | Key | Type | Description |
 | --- | --- | --- |
-| `image` | ndarray (H×W×3) | RGB camera frame |
-| `direction` | int | Agent facing: 0=E, 1=S, 2=W, 3=N |
+| `image` | list (7×7×3) | The agent's own partial view from MiniGrid, not the camera crop |
+| `direction`, `agent_dir` | int | Agent facing: 0=E, 1=S, 2=W, 3=N |
+| `mission` | str | MiniGrid mission text |
 | `agent_x`, `agent_y` | int | Agent grid position |
-| `grid` | ndarray (H×W) | Full map encoded as integers (see below) |
+| `grid` | list of lists, `[y][x]` | Full map encoded as integers (see below), no fog of war |
 | `carrying` | str or None | Color of held object |
 | `step_count` | int | Steps elapsed this episode |
 | `max_steps` | int | Episode step limit |
-| `mission_status` | str | `"success"`, `"failure"`, or `"incomplete"` |
+| `mission_status` | str | `"success"` when all victims are rescued, otherwise `"continue"` |
 | `saved_victims` | int | Count of rescued real victims |
 | `remaining_victims` | int | Count of unrescued real victims |
 | `num_rows`, `num_cols` | int | Map dimensions in rooms |
 | `room_size` | int | Room size in tiles |
-| `cam_top_x`, `cam_top_y` | int | Camera viewport top-left tile |
-| `cam_view_w`, `cam_view_h` | int | Camera viewport size in tiles |
+| `victim_health` | dict | `"x,y"` to health in 0–1 for each real victim still on the map |
+| `cam_top_x`, `cam_top_y`, `cam_view_w`, `cam_view_h` | int | Camera view in tiles. Only with `EdgeFollowCamera` |
+
+### Adding your own observations
+
+`GameObservation` builds the default observation. To add keys, write an `ObservationPostProcessor` and pass it after the default one. Nothing in MOSAIC needs to change:
+
+```python
+from mosaic.core.observations import ObservationPostProcessor
+from mosaic.sar.observations import GameObservation
+
+class LavaCount(ObservationPostProcessor):
+    def process_observation(self, obs, env):
+        obs["lava_in_room"] = count_lava(env)
+        return obs
+
+env = PickupVictimEnv(observation=[GameObservation(), LavaCount()])
+```
+
+Extras may only add keys. One that replaces or removes a default key raises `ValueError`. `observation=` also accepts a single post-processor.
+
+With the GUI, `gui.observation()` returns the env observation, the participant's (`User.observation()`), and `llm_pending`. Pass `SAREnvGUI(env, observers=[...])` to add your own, with the same rule.
 
 **Grid integer encoding:**
 
@@ -159,7 +180,8 @@ All rewards are sparse (returned only on specific events):
 | Event | Reward |
 | --- | --- |
 | Rescue a real victim | +1.0 |
-| Pick up a fake victim | -0.5 |
+| Pick up a fake victim | -1.0 |
+| Pick up a dead real victim | -2.0 |
 | All victims rescued (mission complete) | +1.0 bonus |
 | Step on lava | episode terminated, no reward |
 | Timeout | episode terminated, no reward |

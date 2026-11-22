@@ -5,6 +5,7 @@ import numpy as np
 import pygame
 import pygame_gui
 
+from ..core.observations import ObservationPostProcessor, add_observations
 from .chat import ChatPanel
 from .feedback import EdgeVignette
 from .info import InfoPanel
@@ -30,8 +31,10 @@ class SAREnvGUI:
         info_panel=None,
         chat_panel=None,
         vignette=None,
+        observers: Optional[list[ObservationPostProcessor]] = None,
     ):
         _ensure_pygame_init()
+        self.observers = list(observers or [])
         if config is None:
             config = {}
         self._on_advice_reply = None
@@ -106,7 +109,7 @@ class SAREnvGUI:
         self.chat_panel.attach(self.manager)
 
     def set_advice_callbacks(self, on_reply=None, on_end=None):
-        """Configure study-specific behavior (e.g. battery reveal) to run on
+        """Configure study-specific behavior (e.g. health-bar reveal) to run on
         advice reply/blink-end. chat_panel is a single instance for the life
         of the GUI, so this persists automatically across fullscreen toggles."""
         self._on_advice_reply = on_reply
@@ -156,6 +159,24 @@ class SAREnvGUI:
     def reset(self):
         self.user.reset()
         self.chat_panel.reset()
+        for observer in self.observers:
+            observer.reset(self)
+
+    def observation(self) -> dict:
+        """Everything observed right now: the env observation, the
+        participant's (see ``User.observation``), ``llm_pending`` (an LLM
+        answer is on its way), then any ``observers`` passed to the
+        constructor, which may only add keys."""
+        obs = dict(self.user.obs or {})
+        extra = {
+            **self.user.observation(),
+            "llm_pending": bool(self.user.llm_thread and self.user.llm_thread.is_alive()),
+        }
+        clash = obs.keys() & extra.keys()
+        if clash:
+            raise ValueError(f"env observation already has {sorted(clash)}")
+        obs.update(extra)
+        return add_observations(obs, self.observers, self)
 
     def handle_user_input(self, event):
         if event.type != pygame.KEYDOWN:

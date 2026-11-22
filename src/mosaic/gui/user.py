@@ -36,6 +36,11 @@ class User(ManualControl):
         self.on_reset = None
         self.on_step = None
         self.last_info: dict = {}
+        self.last_action: int | None = None
+        self.last_reward = 0.0
+        self.total_reward = 0.0
+        self.terminated = False
+        self.truncated = False
         self.steps_since_last_llm = 0
         self._start_time: float | None = None
         self.llm_thread: threading.Thread | None = None
@@ -46,6 +51,34 @@ class User(ManualControl):
         if self._start_time is None:
             return self.max_time
         return max(0.0, self.max_time - (time.monotonic() - self._start_time))
+
+    def observation(self) -> dict:
+        """What the participant side observes right now.
+
+        action: last action (left 0, right 1, forward 2, pickup 3, drop 4,
+            toggle 5, done 6), None before the first step.
+        reward, total_reward: reward of the last step and summed over the episode.
+        terminated, truncated: how the episode ended, if it has.
+        total_steps: steps the participant took (not cleared by reset()).
+        remaining_time: seconds left on the time limit.
+        steps_since_last_llm: steps since the last LLM reply.
+        events: events of the last step, [] after a reset.
+        prompt_type: the prompt condition.
+        llm_response: last answer from ask_llm() (None for ask_llm_async()).
+        """
+        return {
+            "action": self.last_action,
+            "reward": self.last_reward,
+            "total_reward": self.total_reward,
+            "terminated": self.terminated,
+            "truncated": self.truncated,
+            "total_steps": self.total_steps,
+            "remaining_time": self.remaining_time,
+            "steps_since_last_llm": self.steps_since_last_llm,
+            "events": list(self.last_info.get("events", [])),
+            "prompt_type": self.prompt_type,
+            "llm_response": self.last_llm_response,
+        }
 
     def step(self, action: Actions):
         if self._start_time is None:
@@ -140,6 +173,7 @@ class User(ManualControl):
         def _run():
             try:
                 result = self._ask(obs_snapshot)
+                self.last_llm_response = result
                 self.llm_result = ("reply", result)
             except Exception as e:
                 self.llm_result = ("error", str(e))

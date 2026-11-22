@@ -63,7 +63,7 @@ mosaic/
 │       │   ├── env.py           # PickupVictimEnv (main environment)
 │       │   ├── objects.py       # Victim and FakeVictim classes
 │       │   ├── actions.py       # RescueAction + RescueRewards (neutral defaults)
-│       │   ├── observations.py  # GameObservation processor
+│       │   ├── observations.py  # GameObservation, observation post-processors
 │       │   ├── instructions.py  # PickupAllVictimsInstr mission
 │       │   └── placers.py       # VictimPlacer (neutral health), LavaPlacer, LockedRoomPlacer
 │       ├── gui/
@@ -241,7 +241,7 @@ PickupVictimEnv.step(action)
   └── Return observation dict
       │
       ▼
-GameObservation.process()
+GameObservation.process_observation()
   └── Encode grid, position, status
       │
       ▼
@@ -388,7 +388,7 @@ Room-bounded view with MiniGrid's line-of-sight cone. Tiles outside the agent's 
 **Switching cameras at runtime:**
 
 ```python
-env.switch_camera("edge_follow")   # or "full", "centered", "fov", "cone"
+env.switch_camera(EdgeFollowCamera())   # or FullviewCamera(), AgentCenteredCamera(), ...
 ```
 
 ---
@@ -397,24 +397,45 @@ env.switch_camera("edge_follow")   # or "full", "centered", "fov", "cone"
 
 **Class:** `GameObservation` — `src/mosaic/sar/observations.py`
 
-Returns a dict on each step:
+Returns a dict from `reset()` and each `step()`:
 
 | Key | Type | Description |
-|-----|------|-------------|
-| `image` | ndarray (H×W×3) | RGB camera frame |
-| `direction` | int | Agent facing: 0=E, 1=S, 2=W, 3=N |
+| --- | --- | --- |
+| `image` | list (7×7×3) | The agent's own partial view from MiniGrid, not the camera crop |
+| `direction`, `agent_dir` | int | Agent facing: 0=E, 1=S, 2=W, 3=N |
+| `mission` | str | MiniGrid mission text |
 | `agent_x`, `agent_y` | int | Agent grid position |
-| `grid` | ndarray (H×W) | Full map encoded as integers (see below) |
+| `grid` | list of lists, `[y][x]` | Full map encoded as integers (see below), no fog of war |
 | `carrying` | str or None | Color of held object |
 | `step_count` | int | Steps elapsed this episode |
 | `max_steps` | int | Episode step limit |
-| `mission_status` | str | `"success"`, `"failure"`, or `"incomplete"` |
+| `mission_status` | str | `"success"` when all victims are rescued, otherwise `"continue"` |
 | `saved_victims` | int | Count of rescued real victims |
 | `remaining_victims` | int | Count of unrescued real victims |
 | `num_rows`, `num_cols` | int | Map dimensions in rooms |
 | `room_size` | int | Room size in tiles |
-| `cam_top_x`, `cam_top_y` | int | Camera viewport top-left tile |
-| `cam_view_w`, `cam_view_h` | int | Camera viewport size in tiles |
+| `victim_health` | dict | `"x,y"` to health in 0–1 for each real victim still on the map |
+| `cam_top_x`, `cam_top_y`, `cam_view_w`, `cam_view_h` | int | Camera view in tiles. Only with `EdgeFollowCamera` |
+
+### Adding your own observations
+
+`GameObservation` builds the default observation. To add keys, write an `ObservationPostProcessor` and pass it after the default one. Nothing in MOSAIC needs to change:
+
+```python
+from mosaic.core.observations import ObservationPostProcessor
+from mosaic.sar.observations import GameObservation
+
+class LavaCount(ObservationPostProcessor):
+    def process_observation(self, obs, env):
+        obs["lava_in_room"] = count_lava(env)
+        return obs
+
+env = PickupVictimEnv(observation=[GameObservation(), LavaCount()])
+```
+
+Extras may only add keys. One that replaces or removes a default key raises `ValueError`. `observation=` also accepts a single post-processor.
+
+With the GUI, `gui.observation()` returns the env observation, the participant's (`User.observation()`), and `llm_pending`. Pass `SAREnvGUI(env, observers=[...])` to add your own, with the same rule.
 
 **Grid integer encoding:**
 
@@ -445,7 +466,8 @@ All rewards are sparse (returned only on specific events):
 | Event | Reward |
 |-------|--------|
 | Rescue a real victim | +1.0 |
-| Pick up a fake victim | -0.5 |
+| Pick up a fake victim | -1.0 |
+| Pick up a dead real victim | -2.0 |
 | All victims rescued (mission complete) | +1.0 bonus |
 | Step on lava | episode terminated, no reward |
 | Timeout | episode terminated, no reward |
@@ -578,11 +600,11 @@ NASA-TLX Survey  (perceived workload)
 
 Every frame during the main game is recorded as a `SARGameTrial` object streamed via LSL (Lab Streaming Layer):
 
-- Full observation dict (grid state, agent position, camera bounds)
-- Action taken and resulting reward
-- LLM prompt + response (if any) with timing
-- Eye gaze coordinates (via Tobii LSL bridge)
-- Experiment metadata (participant ID, trial number, task order)
+- Everything in `gui.observation()`: the env observation, the participant's state (action, reward, total reward, time left, events, LLM response), and `llm_pending`
+- `llm_model`, `llm_provider` and `trial_id`
+- Eye gaze coordinates (via Tobii LSL bridge), as a separate stream
+
+Not recorded by default: the LLM prompt, its timing and errors (wrap your client in `RecordingLLMClient` to keep them), and participant ID or task order (these live in the `ixp` recorder's participant info, not in the game stream).
 
 This enables full post-hoc replay and analysis without re-running the experiment.
 
@@ -706,8 +728,8 @@ gui.run()  # Blocking Pygame loop
 ### `GameObservation` (`src/mosaic/sar/observations.py`)
 
 ```python
-obs_processor = GameObservation(env)
-obs = obs_processor.process()  # Returns observation dict
+obs_processor = GameObservation()
+obs = obs_processor.process_observation(obs, env)  # Returns observation dict
 ```
 
 ### `build_sar_env()` (factory)

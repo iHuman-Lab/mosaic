@@ -71,3 +71,7 @@ def main(argv=None):
         _demo(args)
     else:
         parser.print_help()
+
+
+if __name__ == "__main__":
+    main()

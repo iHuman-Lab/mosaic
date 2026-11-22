@@ -3,7 +3,8 @@ from ..core.placers import Placer
 from .actions import BaseAction, RescueAction
 from .instructions import PickupAllVictimsInstr
 from .objects import REAL_VICTIMS
-from .observations import GameObservation, ObservationProcessor
+from ..core.observations import ObservationChain, ObservationPostProcessor
+from .observations import GameObservation
 from .placers import LavaPlacer, LockedRoomPlacer, VictimPlacer
 
 
@@ -53,7 +54,7 @@ class PickupVictimEnv(SARLevelGen):
         locked_room_placer: Placer = None,
         lava_placer: Placer = None,
         action: BaseAction = None,
-        observation: ObservationProcessor = None,
+        observation: ObservationPostProcessor | list[ObservationPostProcessor] = None,
         **kwargs,
     ):
         # We add many distractors to increase the probability
@@ -78,6 +79,8 @@ class PickupVictimEnv(SARLevelGen):
         self.action = action or RescueAction()
         self.action.env = self
         self.action.fallback = self._step
+        if isinstance(observation, (list, tuple)):
+            observation = ObservationChain(*observation)
         self.observation = observation or GameObservation()
 
     def count_objects_by_type(self, obj_types):

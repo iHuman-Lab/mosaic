@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-
 import numpy as np
+
+from ..core.observations import ObservationPostProcessor
 
 # Base IDs for simple types
 EMPTY = 0
@@ -95,20 +95,7 @@ def cam_bounds(obs: dict) -> tuple[int, int, int, int]:
     return ax - half, ay - half, ax + half + 1, ay + half + 1
 
 
-class ObservationProcessor(ABC):
-    """Abstract base class for processing the raw env observation each step."""
-
-    def reset(self, level_gen) -> None:
-        """Optional per-episode reset hook. No-op by default."""
-        pass
-
-    @abstractmethod
-    def process_observation(self, obs: dict, env) -> dict:
-        """Enrich and return the obs dict with full game state."""
-        pass
-
-
-class GameObservation(ObservationProcessor):
+class GameObservation(ObservationPostProcessor):
     """Processes the raw env observation into an enriched obs dict each step.
 
     Instantiated once on the env. Call process_observation(obs, env) each step.

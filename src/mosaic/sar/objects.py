@@ -1,4 +1,5 @@
 import time
+from typing import ClassVar
 
 from minigrid.core.constants import COLORS, IDX_TO_OBJECT, OBJECT_TO_IDX
 from minigrid.core.world_object import WorldObj
@@ -65,7 +66,7 @@ class Victim(VictimBase):
     """Real victim with symmetric cross shape."""
 
     # Coordinate mapping for each direction
-    _COORDS = {
+    COORDS: ClassVar[dict] = {
         "up": [
             (0.45, 0.55, 0.30, 0.80),  # Body vertical
             (0.25, 0.75, 0.30, 0.40),  # Arms horizontal
@@ -93,26 +94,26 @@ class Victim(VictimBase):
             color: Color of the victim (default "red")
         """
         self.direction = direction
-        self._battery_show_until = 0.0
+        self._health_bar_until = 0.0
         super().__init__(f"victim_{direction}", color)
 
-    def show_battery(self, seconds: float = 5.0):
-        self._battery_show_until = time.time() + seconds
+    def show_health_bar(self, seconds: float = 5.0):
+        self._health_bar_until = time.time() + seconds
 
-    def hide_battery(self):
-        self._battery_show_until = 0.0
+    def hide_health_bar(self):
+        self._health_bar_until = 0.0
 
     def encode(self):
         type_idx, color_idx, _ = super().encode()
         health_int = int(self.health * 20)
-        battery_on = int(time.time() < self._battery_show_until)
-        return (type_idx, color_idx, health_int + 21 * battery_on)
+        health_bar_on = int(time.time() < self._health_bar_until)
+        return (type_idx, color_idx, health_int + 21 * health_bar_on)
 
     def _get_render_coords(self):
-        return self._COORDS[self.direction]
+        return self.COORDS[self.direction]
 
     def render(self, img):
-        if time.time() < self._battery_show_until:
+        if time.time() < self._health_bar_until:
             fill_coords(
                 img,
                 point_in_rect(0.05, 0.98, 0.98 - self.health * 0.93, 0.98),
@@ -126,7 +127,7 @@ class FakeVictim(VictimBase):
     """Fake victim with asymmetric T-shape."""
 
     # Coordinate mapping for each shift and direction combination
-    _COORDS = {
+    COORDS: ClassVar[dict] = {
         ("left", "up"): [
             (0.40, 0.50, 0.30, 0.80),  # Vertical line (left-shifted)
             (0.20, 0.60, 0.30, 0.40),  # Horizontal top (left-shifted)
@@ -175,7 +176,7 @@ class FakeVictim(VictimBase):
         super().__init__(f"fake_victim_{shift}_{direction}", color)
 
     def _get_render_coords(self):
-        return self._COORDS[(self.shift, self.direction)]
+        return self.COORDS[(self.shift, self.direction)]
 
 
 # Constants for victim type checking

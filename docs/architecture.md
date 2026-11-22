@@ -17,7 +17,7 @@ mosaic/
 │       │   ├── env.py           # PickupVictimEnv (main environment), build_sar_env() factory
 │       │   ├── objects.py       # Victim and FakeVictim classes
 │       │   ├── actions.py       # RescueAction + RescueRewards (neutral defaults)
-│       │   ├── observations.py  # GameObservation processor
+│       │   ├── observations.py  # GameObservation, observation post-processors
 │       │   ├── instructions.py  # PickupAllVictimsInstr mission
 │       │   └── placers.py       # VictimPlacer (neutral health), LavaPlacer, LockedRoomPlacer
 │       ├── gui/
@@ -118,7 +118,7 @@ flowchart TD
     C --> C3["Deplete victim health"]
     C --> C4["Check mission state"]
     C --> D["Return observation dict"]
-    D --> E["GameObservation.process()<br/>Encode grid, position, status"]
+    D --> E["GameObservation.process_observation()<br/>Encode grid, position, status"]
     E --> F["SAREnvGUI.render()"]
     F --> F1["Camera.get_crop() → RGB frame"]
     F --> F2["InfoPanel.update()"]

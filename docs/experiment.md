@@ -18,11 +18,11 @@ flowchart TD
 
 Every frame during the main game is recorded as a `SARGameTrial` object streamed via LSL (Lab Streaming Layer):
 
-- Full observation dict (grid state, agent position, camera bounds)
-- Action taken and resulting reward
-- LLM prompt + response (if any) with timing
-- Eye gaze coordinates (via Tobii LSL bridge)
-- Experiment metadata (participant ID, trial number, task order)
+- Everything in `gui.observation()`: the env observation, the participant's state (action, reward, total reward, time left, events, LLM response), and `llm_pending`
+- `llm_model`, `llm_provider` and `trial_id`
+- Eye gaze coordinates (via Tobii LSL bridge), as a separate stream
+
+Not recorded by default: the LLM prompt, its timing and errors (wrap your client in `RecordingLLMClient` to keep them), and participant ID or task order (these live in the `ixp` recorder's participant info, not in the game stream).
 
 This enables full post-hoc replay and analysis without re-running the experiment.
 

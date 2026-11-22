@@ -32,6 +32,21 @@ response = client.query(prompt_string)
 4. `mosaic/llm/parser.py` cleans the response (removes coordinates, reformats object labels).
 5. The cleaned suggestion appears in the `ChatPanel`.
 
+## Saving what the LLM does
+
+Wrap any client in `RecordingLLMClient` to keep every prompt, response, error and its timing:
+
+```python
+from mosaic.llm.client import RecordingLLMClient
+
+client = RecordingLLMClient(my_client)   # or max_history=50
+...
+for e in client.history:
+    print(e.prompt, e.response, e.error, e.latency)
+```
+
+It is optional, and nothing else in MOSAIC uses it.
+
 ## Configuration
 
 ```yaml

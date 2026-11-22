@@ -31,7 +31,7 @@ preamble: |
   Visible: object is currently visible
   Reachable: operator can reach the element by navigating
   Health: victim health remaining; 0% (Dead) means victim has died — do not pick up; — for non-victims
-  Status: Alive = can still be rescued; Dead = out of battery, skip them entirely
+  Status: Alive = can still be rescued; Dead = out of health, skip them entirely
   Saveable: Yes = victim will still be alive when you arrive (can be rescued); No = victim will likely die before you reach them; — for non-visible victims or non-victims
   Margin: steps remaining after arrival before victim dies (steps_until_death − PathLength); positive = safe buffer; negative = victim may die in transit; — for non-visible or non-victims
   PathLength: number of steps required to reach it

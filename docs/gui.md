@@ -69,3 +69,7 @@ Handles all keyboard input and dispatches:
 - Movement and interaction actions to `env.step()`
 - LLM queries on `Alt` key (runs in a background thread to avoid frame drops)
 - Episode reset on `Backspace`
+
+## Observations
+
+`User.observation()` returns the participant's state: last action, reward, total reward, time left, steps since the last LLM reply, events of the last step, and the last LLM response. `SAREnvGUI.observation()` combines it with the env observation and `llm_pending` (an LLM answer is on its way). Pass `SAREnvGUI(env, observers=[...])` to add your own keys. See [Core Systems](core-systems.md#adding-your-own-observations).

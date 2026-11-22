@@ -5,7 +5,7 @@ from mosaic.sar.env import PickupVictimEnv
 class TunedPickupVictimEnv(PickupVictimEnv):
     """PickupVictimEnv with this lab's human-pacing max_steps formula (calibrated
     from pilot data — see git history for the rationale), visible-victim health
-    decay, and the battery-display trigger methods that go with it. mosaic's
+    decay, and the health-bar display trigger methods that go with it. mosaic's
     PickupVictimEnv is bare minimum and has no health/decay concept at all —
     this class owns all of it, since decay is a per-step effect that has to run
     at a specific point in step() (before observation processing, so the
@@ -44,13 +44,13 @@ class TunedPickupVictimEnv(PickupVictimEnv):
         obs = self.observation.process_observation(obs, self)
         return obs, reward, terminated, truncated, info
 
-    def show_all_victim_batteries(self, seconds: float = 5.0):
+    def show_all_victim_health_bars(self, seconds: float = 5.0):
         for victim in self.get_all_victims():
-            victim.show_battery(seconds)
+            victim.show_health_bar(seconds)
 
-    def hide_all_victim_batteries(self):
+    def hide_all_victim_health_bars(self):
         for victim in self.get_all_victims():
-            victim.hide_battery()
+            victim.hide_health_bar()
 
     def calculate_max_steps(self):
         """Human-friendly max step limit for this episode's generated level."""
